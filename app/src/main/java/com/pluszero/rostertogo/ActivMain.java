@@ -377,16 +377,6 @@ public class ActivMain extends AppCompatActivity
         }
     }
 
-    @Override
-    public void onNewFolderDialogPositiveClick(FolderNameDialogFragment dialog) {
-
-    }
-
-    @Override
-    public void onNewFolderDialogNegativeClick(FolderNameDialogFragment dialog) {
-
-    }
-
     private String readIcs(File file) {
         String fileContent = null;
         if (!Utils.isExternalStorageReadable())

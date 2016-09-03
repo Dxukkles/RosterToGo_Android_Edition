@@ -1,9 +1,14 @@
 package com.pluszero.rostertogo.filenav;
 
-import android.app.Activity;
+import android.Manifest;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,10 +17,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.pluszero.rostertogo.ActivMain;
 import com.pluszero.rostertogo.R;
@@ -25,6 +32,10 @@ import java.io.File;
 
 public class FragFilenav extends Fragment {
 
+    public static final int DIALOG_FRAGMENT = 1;
+    public static final int RESULT_OK = 101;
+    private static final int MY_PERMISSION_REQUEST_WRITE_STORAGE = 112;
+
     public static final int FILE_PICKED = 1;
     public FileNavigator fileNav;
     private FileNavAdapter adapter;
@@ -32,11 +43,15 @@ public class FragFilenav extends Fragment {
     private ListView listView;
     private OnFileNavEventListener mListener;
     private EditText etFilename;
+    private Button btnSave; // will be shown only if loadMode == false
     private boolean loadMode = true;    // to discriminate between load and save
+
+    private String newFolderName;
 
     public FragFilenav() {
         fileNav = new FileNavigator();
     }
+
 
     public static FragFilenav newInstance(String filename, boolean loadMode) {
         FragFilenav f = new FragFilenav();
@@ -74,6 +89,18 @@ public class FragFilenav extends Fragment {
             etFilename.setText(filename);
         }
 
+        if (loadMode == false) {
+            btnSave = (Button) v.findViewById(R.id.btnSavePlanning);
+            btnSave.setVisibility(View.VISIBLE);
+            btnSave.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // write the file
+                    mListener.onFileNavSave(fileNav.getActualFile()
+                            .getAbsolutePath(), etFilename.getText().toString());
+                }
+            });
+        }
         setupListView(v);
 
         updateList();
@@ -81,12 +108,12 @@ public class FragFilenav extends Fragment {
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         try {
-            mListener = (OnFileNavEventListener) activity;
+            mListener = (OnFileNavEventListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
+            throw new ClassCastException(context.toString()
                     + " must implement OnFilenavItemListener");
         }
     }
@@ -109,6 +136,20 @@ public class FragFilenav extends Fragment {
                 updateList();
             }
         });
+    }
+
+    private void createNewFolder(String name) {
+        File folder = new File(fileNav.getActualFile().getAbsolutePath() +
+                File.separator + name);
+        boolean success = true;
+        if (!folder.exists()) {
+            success = folder.mkdir();
+        }
+        if (success) {
+            Toast.makeText(getActivity(), "Dossier créé !", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getActivity(), "Erreur : dossier non créé !", Toast.LENGTH_LONG).show();
+        }
     }
 
     public void updateList() {
@@ -136,13 +177,6 @@ public class FragFilenav extends Fragment {
                 updateList();
                 return true;
 
-            case R.id.action_save:
-                // write the file
-                mListener.onFileNavSave(fileNav.getActualFile()
-                        .getAbsolutePath(), etFilename.getText().toString());
-
-                return true;
-
             case R.id.action_new_folder:
                 showFolderNameDialogFragment();
                 return true;
@@ -155,7 +189,27 @@ public class FragFilenav extends Fragment {
     // Dialogs handling
     public void showFolderNameDialogFragment() {
         // Create an instance of the dialog fragment and show it
-        DialogFragment dialog = new FolderNameDialogFragment();
-        dialog.show(getFragmentManager(), "FolderNameDialogFragment");
+        // DialogFragment dialog = new FolderNameDialogFragment();
+        // dialog.show(getFragmentManager(), "FolderNameDialogFragment");
+
+        DialogFragment newFragment = new FolderNameDialogFragment();
+        newFragment.setTargetFragment(this, DIALOG_FRAGMENT);
+        newFragment.show(getFragmentManager(), "dialog");
+
     }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Make sure fragment codes match up
+        switch (requestCode) {
+            case DIALOG_FRAGMENT:
+
+                if (resultCode == RESULT_OK) {
+                    newFolderName = data.getStringExtra("folder_name");
+                    createNewFolder(newFolderName);
+                }
+                break;
+        }
+    }
+
+
 }

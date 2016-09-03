@@ -50,25 +50,28 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
     public static final String MSG_CONNECTING_DASHBOARD = "Connexion au dashboard";
     public static final String MSG_CONNECTING_PLANNING = "Connexion au planning";
     public static final String MSG_FETCHING_PLANNING = "Récupération du planning";
-    public static final String MSG_ROSTER_MODIFICATIONS_NOT_CHECKED = "Modifications de planning non vérifiées";
-    public static final String MSG_ROSTER_NOT_SIGNED = "Planning non signé";
     public static final String MSG_LOGIN_PASS_ERROR = "Le login ou le mot de passe saisi est incorrect";
-    public static final String MSG_CONNECTION_ERROR = "Erreur durant la connexion";
     public static final String MSG_CHECKING_CHANGES = "Vérification des changements";
     public static final String MSG_PLANNING_VALIDATION = "Validation du planning";
 
-    private static final Integer ERR_CONNECTION = 101;
-    private static final Integer ERR_LOGIN_PASS = 102;
-    private static final Integer ERR_MODIFICATIONS_NOT_CHECKED = 103;
-    private static final Integer ERR_ROSTER_NOT_SIGNED = 104;
+    public static final Integer ERR_CONNECTION = 101;
+    public static final Integer ERR_LOGIN_PASS = 102;
+    public static final Integer ERR_MODIFICATIONS_NOT_CHECKED = 103;
+    public static final Integer ERR_ROSTER_NOT_SIGNED = 104;
+
+    private SharedPreferences sharedPref;
 
     private OnConnectionListener listener;
     private Context context;
+
     public ConnectTo(Context context, String login, String password, OnConnectionListener listener) {
         this.context = context;
         this.login = login;
         this.password = password;
         this.listener = listener;
+
+        sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
         System.setProperty("jsse.enableSNIExtension", "false");
         // Instantiate CookieManager / set CookiePolicy
         CookieManager manager = new CookieManager();
@@ -219,10 +222,9 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
 
             // in case of planning modifications
             if (body.contains("Please check your planning modifications</a>")) {
-                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
-                if (sharedPref.getBoolean("pref_autosign").get.userPrefs.autoCheckAndSign == false) {
-                    publishProgress(MSG_ROSTER_MODIFICATIONS_NOT_CHECKED);
+                if (sharedPref.getBoolean(context.getString(R.string.keypref_planning_autosign), false) == false) {
+                    return ERR_MODIFICATIONS_NOT_CHECKED;
                 }
                 url = new URL(URL_PLANNING_CHANGES + windowId);
                 conn = (HttpsURLConnection) url.openConnection();
@@ -238,10 +240,10 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
                 conn.setConnectTimeout(15000);
 
                 publishProgress(MSG_CHECKING_CHANGES);
-                try (DataOutputStream wr = new DataOutputStream(conn.getOutputStream())) {
-                    wr.writeBytes(urlParam);
-                    wr.flush();
-                }
+
+                wr = new DataOutputStream(conn.getOutputStream());
+                wr.writeBytes(urlParam);
+                wr.flush();
 
                 body = readStream(conn.getInputStream());
                 //TODO: detect if check is ok
@@ -253,7 +255,7 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
 
             // in case of planning signature required
             if (body.contains("Please validate your planning</a>")) {
-                if (MainApp.userPrefs.autoCheckAndSign == false) {
+                if (sharedPref.getBoolean(context.getString(R.string.keypref_planning_autosign), false) == false) {
                     return ERR_ROSTER_NOT_SIGNED;
                 }
                 url = new URL(URL_PLANNING + windowId);
@@ -271,10 +273,9 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
                 conn.setConnectTimeout(15000);
 
                 publishProgress(MSG_PLANNING_VALIDATION);
-                try (DataOutputStream wr = new DataOutputStream(conn.getOutputStream())) {
-                    wr.writeBytes(urlParam);
-                    wr.flush();
-                }
+                wr = new DataOutputStream(conn.getOutputStream());
+                wr.writeBytes(urlParam);
+                wr.flush();
 
                 body = readStream(conn.getInputStream());
                 //TODO: detect if check is ok

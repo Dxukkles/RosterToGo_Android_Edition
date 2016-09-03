@@ -15,6 +15,7 @@
     <string name="keypref_google_calendars_daysoff">pref_google_calendar_daysoff</string>
     <string name="keypref_google_calendars_vacation">pref_google_calendar_vacation</string>
     <string name="keypref_google_calendars_dayswhite">pref_google_calendar_dayswhite</string>
+    <string name="keypref_planning_autosign">pref_planning_autosign</string>
 
     <string name="remember_me">Se souvenir</string>
     <string name="auto_sign_planning">Signer automatiquement le planning</string>
@@ -43,6 +44,7 @@
     <string name="cyril_real">Cyril REAL</string>
     <string name="about">A propos</string>
     <string name="activity_details">Détails de l\'activité</string>
+    <string name="save">Sauvegarder</string>
 
 
 </resources>
