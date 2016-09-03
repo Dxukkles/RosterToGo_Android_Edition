@@ -1,6 +1,8 @@
 package com.pluszero.rostertogo.filenav;
 
 import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Context;
@@ -107,6 +109,7 @@ public class FragFilenav extends Fragment {
         return v;
     }
 
+    @TargetApi(23)
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -114,6 +117,17 @@ public class FragFilenav extends Fragment {
             mListener = (OnFileNavEventListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
+                    + " must implement OnFilenavItemListener");
+        }
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mListener = (OnFileNavEventListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
                     + " must implement OnFilenavItemListener");
         }
     }
