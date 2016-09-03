@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="colorFlight">#87cefa</color>
+    <color name="colorDeadHead">#b0e0e6</color>
+    <color name="colorSyndicat">#deb887</color>
+    <color name="colorHotel">#deb887</color>
+    <color name="colorGroundActivity">#cd853f</color>
+    <color name="colorDayOff">#98fb98</color>
+    <color name="colorVacation">#00fa9a</color>
+    <color name="colorIllness">#ffd700</color>
+    <color name="colorBlanc">#ffffff</color>
+    <color name="colorWeekEnd">#dcdcdc</color>
+    <color name="colorWeek">#f5f5f5</color>
+
+    <color name="login_background">#f5f5f5</color>
+    <color name="grey">#cdcdcd</color>
+</resources>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:id="@+id/group_features"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_login"
+            android:title="Connexion" />
+        <item
+            android:id="@+id/nav_planning"
+            android:title="Planning" />
+        <item
+            android:id="@+id/nav_sync_calendar"
+            android:title="Synchroniser" />
+        <item
+            android:id="@+id/nav_save"
+            android:title="Sauvegarder" />
+        <item
+            android:id="@+id/nav_load"
+            android:title="Charger" />
+    </group>
+
+    <group android:id="@+id/group_preferences">
+        <item
+            android:id="@+id/nav_settings"
+            android:title="Préférences" />
+    </group>
+    <group android:id="@+id/group_communication">
+        <item
+            android:id="@+id/nav_web"
+            android:title="Visiter le site web" />
+        <item
+            android:id="@+id/nav_mail"
+            android:title="Envoyer un e-mail" />
+    </group>
+    <group android:id="@+id/group_credits">
+        <item android:title="@string/about" />
+    </group>
+</menu>

@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">RosterToGo</string>
+    <string name="version_number">v0.7</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Options</string>
+    <string name="title_activity_activity_login">Merci de vous identifier</string>
+
+    <string name="file_name">Nom de fichier</string>
+
+    <!-- Strings related to Settings -->
+    <string name="keypref_google_calendars_flight">pref_google_calendar_flight</string>
+    <string name="keypref_google_calendars_ground">pref_google_calendar_ground</string>
+    <string name="keypref_google_calendars_daysoff">pref_google_calendar_daysoff</string>
+    <string name="keypref_google_calendars_vacation">pref_google_calendar_vacation</string>
+    <string name="keypref_google_calendars_dayswhite">pref_google_calendar_dayswhite</string>
+
+    <string name="remember_me">Se souvenir</string>
+    <string name="auto_sign_planning">Signer automatiquement le planning</string>
+    <string name="use_default_colors">Utiliser les couleurs par défaut</string>
+    <string name="flights_calendar">Agenda(s) vols</string>
+    <string name="ground_activities_calendar">Agenda(s) activités sol</string>
+    <string name="days_off_calendar">Agenda(s) jours OFF</string>
+    <string name="vacations_calendar">Agenda(s) congés</string>
+    <string name="days_white_calendar">Agenda(s) jours blancs</string>
+    <string name="connection">Connexion</string>
+    <string name="google_synchro">Synchronisation Google</string>
+    <string name="enter_new_folder_name">Entrer un nom pour le nouveau dossier</string>
+    <string name="cancel">Annuler</string>
+    <string name="no_planning_avail">Aucun planning à sauvegarder</string>
+    <string name="ok">OK</string>
+    <string name="external_storage_not_available">Mémoire de stockage indisponible</string>
+    <string name="file_could_not_be_saved">Le fichier n\'a pas pu être sauvé</string>
+    <string name="file_saved">Fichier sauvé</string>
+    <string name="rostertogo">RosterToGo</string>
+    <string name="tvf_planning_synchronized">Le planning TVF synchronisé</string>
+    <string name="google_email">Adresse e-mail du compte Google</string>
+    <string name="avail_calendars">Calendriers disponibles</string>
+    <string name="check_google_account_mail_adress">Vérifier l\'adresse mail du compte Google</string>
+    <string name="Apply">Valider</string>
+    <string name="credits">Credits</string>
+    <string name="cyril_real">Cyril REAL</string>
+    <string name="about">A propos</string>
+    <string name="activity_details">Détails de l\'activité</string>
+
+
+</resources>

@@ -1,0 +1,99 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.pluszero.rostertogo.FragLogin"
+    android:padding="16dp"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Merci de vous identifier pour\naccéder à l&apos;application"
+        android:id="@+id/textView4"
+        android:gravity="center"
+        android:layout_above="@+id/linlayPassword"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="24dp" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/linlayLogin"
+        android:padding="8dp"
+        android:background="@color/login_background"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Login"
+            android:id="@+id/textView2"
+            android:layout_weight="1" />
+
+        <EditText
+            android:layout_width="128dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/etLogin"
+            android:inputType="textCapCharacters"
+            android:maxLength="3" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:background="@color/login_background"
+        android:id="@+id/linlayPassword"
+        android:layout_below="@+id/linlayLogin"
+        android:layout_centerHorizontal="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mot de passe"
+            android:id="@+id/textView3"
+            android:layout_weight="1" />
+
+        <EditText
+            android:layout_width="128dp"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:ems="10"
+            android:id="@+id/etPassword" />
+
+    </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="OK"
+        android:id="@+id/btnOk"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/linlayPassword"
+        android:layout_margin="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Prêt..."
+        android:id="@+id/tvStatus"
+        android:layout_below="@+id/pbStatus"
+        android:layout_centerHorizontal="true" />
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/pbStatus"
+        android:visibility="invisible"
+        android:layout_below="@+id/btnOk"
+        android:layout_centerHorizontal="true" />
+
+</LinearLayout>

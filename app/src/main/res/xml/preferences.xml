@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:key="pref_connection_settings"
+        android:title="@string/connection">
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_login_remember"
+            android:title="@string/remember_me" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_autosign"
+            android:title="@string/auto_sign_planning" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="pref_google_sync_settings"
+        android:title="@string/google_synchro">
+        <EditTextPreference
+            android:defaultValue=""
+            android:inputType="textEmailAddress"
+            android:key="pref_google_email"
+            android:title="@string/google_email"/>
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_google_use_default_colors"
+            android:title="@string/use_default_colors" />
+        <PreferenceScreen
+            android:key="keypref_google_calendars"
+            android:persistent="false"
+            android:title="Calendriers">
+            <com.pluszero.rostertogo.CalendarListPreference
+                android:defaultValue="@array/pref_calendar_list_default"
+                android:key="@string/keypref_google_calendars_flight"
+                android:title="@string/flights_calendar"/>
+            <com.pluszero.rostertogo.CalendarListPreference
+                android:defaultValue="@array/pref_calendar_list_default"
+                android:key="@string/keypref_google_calendars_ground"
+                android:title="@string/ground_activities_calendar"/>
+            <com.pluszero.rostertogo.CalendarListPreference
+                android:defaultValue="@array/pref_calendar_list_default"
+                android:key="@string/keypref_google_calendars_daysoff"
+                android:title="@string/days_off_calendar"/>
+            <com.pluszero.rostertogo.CalendarListPreference
+                android:defaultValue="@array/pref_calendar_list_default"
+                android:key="@string/keypref_google_calendars_vacation"
+                android:title="@string/vacations_calendar"/>
+            <com.pluszero.rostertogo.CalendarListPreference
+                android:defaultValue="@array/pref_calendar_list_default"
+                android:key="@string/keypref_google_calendars_dayswhite"
+                android:title="@string/days_white_calendar"/>
+        </PreferenceScreen>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

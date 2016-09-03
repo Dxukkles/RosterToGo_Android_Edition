@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="pref_calendar_list_default"></string-array>
+    <string-array name="pref_calendar_list_entries">
+        <item>un truc</item>
+    </string-array>
+    <string-array name="pref_calendar_list_entries_values">
+        <item>un bidule</item>
+    </string-array>
+
+</resources>
