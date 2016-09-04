@@ -7,12 +7,17 @@ package com.pluszero.rostertogo.model;
 
 import com.pluszero.rostertogo.ActivityFigures;
 import com.pluszero.rostertogo.DateComparator;
+import com.pluszero.rostertogo.PdfManager;
+
+import java.io.File;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TimeZone;
 
@@ -158,6 +163,97 @@ public class PlanningModel {
                     crew = pe.getCrew();
                 } else {
                     pe.setCrew(crew);
+                }
+            }
+        }
+    }
+
+    // KEEP FOR OFFLINE TESTING
+//    public void addDataFromPDF(HashMap<String, String> trigraphs) {
+//        File pdfFile = new java.io.File(System.getProperty("user.home"), ".RosterToGo/planning.pdf");
+//        PdfManager manager = new PdfManager(pdfFile, trigraphs);
+//
+//        for (PlanningEvent pe : alEvents) {
+//            // Crew (when crew not present in ics file)
+//            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT) && pe.getCrew().equals("")) {
+//                String data = manager.findCrew(pe.getGcBegin());
+//                if (data != null) {
+//                    pe.setCrew(data);
+//                }
+//            }
+//            // hotel data
+//            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT) || pe.getCategory().equals(PlanningEvent.CAT_DEAD_HEAD)) {
+//                String data = manager.findHotelDetails(pe.getGcBegin());
+//                if (data != null) {
+//                    pe.setHotelData(data);
+//                }
+//            }
+//
+//            // flight remarks
+//            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT)) {
+//                String data = manager.findRemarks(
+//                        pe.getGcBegin(),
+//                        pe.getIataOrig(),
+//                        pe.getIataDest());
+//                if (data != null) {
+//                    pe.setRemark(data);
+//                }
+//            }
+//
+//            if (pe.isSimActivity()) {
+//                String data = manager.findTraining(pe.getGcBegin());
+//                if (data != null) {
+//                    pe.setCrew(data);
+//                }
+//
+//                data = manager.findRemarks(pe.getGcBegin());
+//                if (data != null) {
+//                    pe.setRemark(data);
+//                }
+//            }
+//        }
+//
+//    }
+
+    public void addDataFromPDF(InputStream is, HashMap<String, String> trigraphs) {
+        PdfManager manager = new PdfManager(is, trigraphs);
+
+        for (PlanningEvent pe : alEvents) {
+            // Crew (when crew not present in ics file)
+            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT) && pe.getCrew().equals("")) {
+                String data = manager.findCrew(pe.getGcBegin());
+                if (data != null) {
+                    pe.setCrew(data);
+                }
+            }
+
+            // hotel data
+            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT) || pe.getCategory().equals(PlanningEvent.CAT_DEAD_HEAD)) {
+                String data = manager.findHotelDetails(pe.getGcBegin());
+                if (data != null) {
+                    pe.setHotelData(data);
+                }
+            }
+            // remarks
+            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT)) {
+                String data = manager.findRemarks(
+                        pe.getGcBegin(),
+                        pe.getIataOrig(),
+                        pe.getIataDest());
+                if (data != null) {
+                    pe.setRemark(data);
+                }
+            }
+
+            if (pe.isSimActivity()) {
+                String data = manager.findTraining(pe.getGcBegin());
+                if (data != null) {
+                    pe.setTraining(data);
+                }
+
+                data = manager.findRemarks(pe.getGcBegin());
+                if (data != null) {
+                    pe.setRemark(data);
                 }
             }
         }

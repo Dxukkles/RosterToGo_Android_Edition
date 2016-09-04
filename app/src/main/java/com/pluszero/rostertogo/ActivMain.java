@@ -1,8 +1,11 @@
 package com.pluszero.rostertogo;
 
+import android.app.DialogFragment;
 import android.app.Fragment;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -13,6 +16,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.pluszero.rostertogo.filenav.FolderNameDialogFragment;
@@ -50,7 +54,7 @@ public class ActivMain extends AppCompatActivity
 
     private PlanningModel planningModel;
     private ConnectTo connectTo;
-    private HashMap<String, String> trigraphsList;
+    private HashMap<String, String> trigraphs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,11 +66,11 @@ public class ActivMain extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         planningModel = new PlanningModel();
-        trigraphsList = getTrigraphsList();
+        trigraphs = getTrigraphsList();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -93,33 +97,6 @@ public class ActivMain extends AppCompatActivity
             super.onBackPressed();
         }
     }
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.activ_main, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            // Display the preferences fragment as the main content.
-//            getFragmentManager().beginTransaction()
-//                    .replace(R.id.content_frame, new FragSettings())
-//                    .commit();
-//
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -174,16 +151,18 @@ public class ActivMain extends AppCompatActivity
         getFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, fragment, FRAG_SAVE)
                 .commit();
-        if (getSupportActionBar() != null)
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Sauver le planning");
+        }
     }
 
     private void displayFragmentLoad() {
         Fragment fragment = FragFilenav.newInstance(null, true);
         getFragmentManager().beginTransaction().replace(
                 R.id.content_frame, fragment, FRAG_LOAD).commit();
-        if (getSupportActionBar() != null)
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Charger un planning");
+        }
     }
 
     private void displayFragmentLogin() {
@@ -209,39 +188,68 @@ public class ActivMain extends AppCompatActivity
     @Override
     public void onConnectionUpdated(String... messages) {
         FragLogin fragLogin = (FragLogin) getFragmentManager().findFragmentByTag(FRAG_LOGIN);
-        if (fragLogin == null)
+        if (fragLogin == null) {
             return;
+        }
 
         fragLogin.setConnectionStatus(messages[0]);
     }
 
     @Override
-    public void onConnectionCompleted(int value) {
-        FragLogin fragLogin = (FragLogin) getFragmentManager().findFragmentByTag(FRAG_LOGIN);
-        if (fragLogin == null)
-            return;
-        fragLogin.getBtnOK().setEnabled(true);
-        fragLogin.getProgressBar().setVisibility(View.INVISIBLE);
-        planningModel.setUserTrigraph(connectTo.getUserTrigraph());
-        addToModel(extractICS(connectTo.getBody()));
-        planningModel.copyCrew();
-        planningModel.fixSplittedActivities();
-        planningModel.addJoursBlanc();
-        planningModel.factorizeDays();
-        planningModel.computeActivityFigures();
+    public void onConnectionCompleted(int connectionResult) {
+        // resume normal screen behavior
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        if (connectionResult == ConnectTo.OK_CONNECTION) {
+            FragLogin fragLogin = (FragLogin) getFragmentManager().findFragmentByTag(FRAG_LOGIN);
+            if (fragLogin == null) {
+                return;
+            }
+            fragLogin.getBtnOK().setEnabled(true);
+            fragLogin.getProgressBar().setVisibility(View.INVISIBLE);
+            planningModel.setUserTrigraph(connectTo.getUserTrigraph());
+            addToModel(extractICS(connectTo.contentIcs));
+            // get data from PDF
+            planningModel.addDataFromPDF(connectTo.pdfStream, trigraphs);
+            // additional work
+            planningModel.copyCrew();
+            planningModel.fixSplittedActivities();
+            planningModel.addJoursBlanc();
+            planningModel.factorizeDays();
+            planningModel.computeActivityFigures();
+            planningModel.setUserTrigraph(connectTo.getUserTrigraph());
 
-        // Insert the fragment by replacing any existing fragment
-        displayPlanning();
+            // Insert the fragment by replacing any existing fragment
+            displayPlanning();
+        } else if (connectionResult == ConnectTo.ERR_ROSTER_NOT_SIGNED) {
+            DialogFragment newFragment = MyAlertDialog.newInstance("Attention", getString(R.string.err_msg_planning_not_signed));
+            newFragment.show(getFragmentManager(), "alert");
+        } else if (connectionResult == ConnectTo.ERR_MODIFICATIONS_NOT_CHECKED) {
+            DialogFragment newFragment = MyAlertDialog.newInstance("Attention", getString(R.string.err_msg_modifications_not_checked));
+            newFragment.show(getFragmentManager(), "alert");
+        } else if (connectionResult == ConnectTo.ERR_CONNECTION) {
+            DialogFragment newFragment = MyAlertDialog.newInstance("Attention", getString(R.string.err_msg_connection));
+            newFragment.show(getFragmentManager(), "alert");
+        } else if (connectionResult == ConnectTo.ERR_LOGIN_PASS) {
+            DialogFragment newFragment = MyAlertDialog.newInstance("Attention", getString(R.string.err_msg_login_pass));
+            newFragment.show(getFragmentManager(), "alert");
+        } else if (connectionResult == ConnectTo.ERR_MISC) {
+            DialogFragment newFragment = MyAlertDialog.newInstance("Attention", getString(R.string.err_msg_misc));
+            newFragment.show(getFragmentManager(), "alert");
+        }
     }
 
     @Override
     public void onConnectionClick(String login, String password) {
+        // prevent screen from blanking
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         connectTo = (ConnectTo) new ConnectTo(this, login, password, this)
                 .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "");
 
         FragLogin fragLogin = (FragLogin) getFragmentManager().findFragmentByTag(FRAG_LOGIN);
-        if (fragLogin == null)
+        if (fragLogin == null) {
             return;
+        }
         fragLogin.getBtnOK().setEnabled(false);
         fragLogin.getProgressBar().setVisibility(View.VISIBLE);
     }
@@ -292,7 +300,7 @@ public class ActivMain extends AppCompatActivity
 
                 String source = Utils.extractString(content, ICSEvent.TAG_BEGIN, ICSEvent.TAG_END, indexICS);
                 ICSEvent event = new ICSEvent(source);
-                PlanningEvent planningEvent = new PlanningEvent(event.getICSStart(), event.getICSEnd(), event.getICSSummary(), event.getICSCategory(), event.getICSDesc(), trigraphsList); // Incrément pour parcourir le fichier
+                PlanningEvent planningEvent = new PlanningEvent(event.getICSStart(), event.getICSEnd(), event.getICSSummary(), event.getICSCategory(), event.getICSDesc(), trigraphs); // Incrément pour parcourir le fichier
                 alEvents.add(planningEvent);
                 indexICS += source.length();
             }
@@ -342,8 +350,9 @@ public class ActivMain extends AppCompatActivity
         if (getSupportActionBar() != null) {
             if (planningModel.getUserTrigraph() != null) {
                 getSupportActionBar().setTitle("Planning (" + planningModel.getUserTrigraph() + ")");
-            } else
+            } else {
                 getSupportActionBar().setTitle("Planning");
+            }
         }
     }
 
@@ -379,12 +388,14 @@ public class ActivMain extends AppCompatActivity
 
     private String readIcs(File file) {
         String fileContent = null;
-        if (!Utils.isExternalStorageReadable())
+        if (!Utils.isExternalStorageReadable()) {
             return null;
+        }
 
         fileContent = readFileFromSDCard(file);
-        if (fileContent == null || fileContent.equals(""))
+        if (fileContent == null || fileContent.equals("")) {
             return null;
+        }
 
         return fileContent;
     }
@@ -426,8 +437,9 @@ public class ActivMain extends AppCompatActivity
         if (getSupportActionBar() != null) {
             if (planningModel.getUserTrigraph() != null) {
                 getSupportActionBar().setTitle("Planning (" + planningModel.getUserTrigraph() + ")");
-            } else
+            } else {
                 getSupportActionBar().setTitle("Planning");
+            }
         }
     }
 

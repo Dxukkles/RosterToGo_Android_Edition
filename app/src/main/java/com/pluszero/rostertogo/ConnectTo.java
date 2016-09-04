@@ -3,6 +3,7 @@ package com.pluszero.rostertogo;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 
 import java.io.BufferedInputStream;
@@ -32,6 +33,7 @@ import javax.net.ssl.HttpsURLConnection;
 public class ConnectTo extends AsyncTask<String, String, Integer> {
 
     private String body;
+    public String contentIcs, contentPdf;
     private String login;
     private String password;
     private String userTrigraph;    // crewmember's userTrigraph
@@ -44,25 +46,32 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
     private static final String URL_PLANNING = "https://connect.fr.transavia.com/TOConnect/pages/crewweb/planning.jsf?windowId=";
     private static final String URL_PLANNING_CHANGES = "https://connect.fr.transavia.com/TOConnect/pages/crewweb/changes.jsf?windowId=";
 
-    public static final String MSG_PROCESS_FINISHED = "Processus terminé";
-    public static final String MSG_LOGIN_IN_PROGRESS = "Identification en cours";
-    public static final String MSG_LOGIN_OK = "Identification OK";
-    public static final String MSG_CONNECTING_DASHBOARD = "Connexion au dashboard";
-    public static final String MSG_CONNECTING_PLANNING = "Connexion au planning";
-    public static final String MSG_FETCHING_PLANNING = "Récupération du planning";
+    private static final String MSG_PROCESS_FINISHED = "Processus terminé";
+    private static final String MSG_LOGIN_IN_PROGRESS = "Identification en cours";
+    private static final String MSG_LOGIN_OK = "Identification OK";
+    private static final String MSG_CONNECTING_DASHBOARD = "Connexion au dashboard";
+    private static final String MSG_CONNECTING_PLANNING = "Connexion au planning";
+    private static final String MSG_FETCHING_PLANNING = "Récupération du planning";
+    private static final String MSG_FETCHING_ADDITIONAL_DATA = "Récupération des données additionnelles";
+
     public static final String MSG_LOGIN_PASS_ERROR = "Le login ou le mot de passe saisi est incorrect";
     public static final String MSG_CHECKING_CHANGES = "Vérification des changements";
     public static final String MSG_PLANNING_VALIDATION = "Validation du planning";
 
-    public static final Integer ERR_CONNECTION = 101;
-    public static final Integer ERR_LOGIN_PASS = 102;
-    public static final Integer ERR_MODIFICATIONS_NOT_CHECKED = 103;
-    public static final Integer ERR_ROSTER_NOT_SIGNED = 104;
+    public static final int ERR_CONNECTION = 101;
+    public static final int ERR_LOGIN_PASS = 102;
+    public static final int ERR_MODIFICATIONS_NOT_CHECKED = 103;
+    public static final int ERR_ROSTER_NOT_SIGNED = 104;
+    public static final int ERR_MISC = 105;
+
+    public static final int OK_CONNECTION = 1;
 
     private SharedPreferences sharedPref;
 
     private OnConnectionListener listener;
     private Context context;
+
+    public InputStream pdfStream;
 
     public ConnectTo(Context context, String login, String password, OnConnectionListener listener) {
         this.context = context;
@@ -77,10 +86,6 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
         CookieManager manager = new CookieManager();
         manager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
         CookieHandler.setDefault(manager);
-    }
-
-    public String getBody() {
-        return body;
     }
 
     private String readStream(InputStream in) {
@@ -135,6 +140,7 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
 
     @Override
     protected Integer doInBackground(String... params) {
+        DataOutputStream wr;
         try {
             publishProgress(MSG_LOGIN_IN_PROGRESS);
 
@@ -182,13 +188,12 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
             conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.0.10) Gecko/2009042316 Firefox/3.0.10 (.NET CLR 3.5.30729)");
 
-            DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
-            wr.writeBytes(urlParam);
-            wr.flush();
+            DataOutputStream dosLogin = new DataOutputStream(conn.getOutputStream());
+            dosLogin.writeBytes(urlParam);
+            dosLogin.flush();
 
             if (readStream(conn.getInputStream()).contains(MSG_LOGIN_PASS_ERROR)) {
-                publishProgress(MSG_LOGIN_PASS_ERROR);
-                return 0;
+                return ERR_LOGIN_PASS;
             }
 
             location = conn.getHeaderField("Location");
@@ -241,9 +246,9 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
 
                 publishProgress(MSG_CHECKING_CHANGES);
 
-                wr = new DataOutputStream(conn.getOutputStream());
-                wr.writeBytes(urlParam);
-                wr.flush();
+                DataOutputStream dosModifs = new DataOutputStream(conn.getOutputStream());
+                dosModifs.writeBytes(urlParam);
+                dosModifs.flush();
 
                 body = readStream(conn.getInputStream());
                 //TODO: detect if check is ok
@@ -273,9 +278,9 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
                 conn.setConnectTimeout(15000);
 
                 publishProgress(MSG_PLANNING_VALIDATION);
-                wr = new DataOutputStream(conn.getOutputStream());
-                wr.writeBytes(urlParam);
-                wr.flush();
+                DataOutputStream dosSign = new DataOutputStream(conn.getOutputStream());
+                dosSign.writeBytes(urlParam);
+                dosSign.flush();
 
                 body = readStream(conn.getInputStream());
                 //TODO: detect if check is ok
@@ -312,9 +317,9 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
 
             publishProgress(MSG_FETCHING_PLANNING);
 
-            wr = new DataOutputStream(conn.getOutputStream());
-            wr.writeBytes(urlParam);
-            wr.flush();
+            DataOutputStream dosIcs = new DataOutputStream(conn.getOutputStream());
+            dosIcs.writeBytes(urlParam);
+            dosIcs.flush();
 
             int BUFFER = 1024;
             int count;
@@ -333,20 +338,48 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
             bis.close();
             bis.close();
 
-            body = baos.toString("UTF-8");
+            contentIcs = baos.toString("UTF-8");
+
+//            // get the pdf file
+            url = new URL(URL_PLANNING + windowId);
+            conn = (HttpsURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            conn.setInstanceFollowRedirects(false);
+            urlParam = "&formPlanning=formPlanning"
+                    + "&" + "formPlanning_tabListeActivites_selection="
+                    + "&" + "formPlanning_j_idt144="
+                    + "&" + "formLogin_actionLogin="
+                    + "&" + "javax.faces.ViewState=" + viewStateValue;
+
+            publishProgress(MSG_FETCHING_ADDITIONAL_DATA);
+
+            DataOutputStream dosPdf = new DataOutputStream(conn.getOutputStream());
+            dosPdf.writeBytes(urlParam);
+            dosPdf.flush();
+
+            pdfStream = conn.getInputStream();
+
             publishProgress(MSG_PROCESS_FINISHED);
 
-            return 1;
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+            return ERR_MISC;
         } catch (ProtocolException e) {
             e.printStackTrace();
+            return ERR_MISC;
+
         } catch (MalformedURLException e) {
             e.printStackTrace();
+            return ERR_MISC;
+
         } catch (IOException e) {
             e.printStackTrace();
+            return ERR_MISC;
+
         }
-        return 1;
+        return OK_CONNECTION;
     }
 
     @Override

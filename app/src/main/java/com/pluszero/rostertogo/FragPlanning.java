@@ -40,8 +40,9 @@ public class FragPlanning extends Fragment {
     }
 
     public void updateList() {
-        if (model.getAlEvents() != null)
+        if (model.getAlEvents() != null) {
             adapter = new PlanningAdapter(getActivity(), R.layout.frag_planning_item, model.getAlEvents());
+        }
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -58,17 +59,44 @@ public class FragPlanning extends Fragment {
         String nl = System.getProperty("line.separator");
         StringBuilder sb = new StringBuilder();
 
+        if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT) || pe.getCategory().equals(PlanningEvent.CAT_DEAD_HEAD)) {
+            if (pe.getAirportOrig() != null) {
+                sb.append(getString(R.string.departure)).append(nl);
+                sb.append(pe.getAirportOrig().city.toUpperCase()).append(" / ");
+                sb.append(pe.getAirportOrig().name).append(nl);
+                sb.append(pe.getAirportOrig().country).append(nl).append(nl);
+            }
+            if (pe.getAirportDest() != null) {
+                sb.append(getString(R.string.arrival)).append(nl);
+                sb.append(pe.getAirportDest().city.toUpperCase()).append(" / ");
+                sb.append(pe.getAirportDest().name).append(nl);
+                sb.append(pe.getAirportDest().country).append(nl).append(nl);
+            }
+        }
         if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT)) {
-            sb.append("Fonction : ").append(pe.getFunction());
+            sb.append(getString(R.string.function)).append(pe.getFunction());
             sb.append(nl);
-            sb.append("Temps de vol : ");
+            sb.append(getString(R.string.flight_time));
             sb.append(Utils.convertMinutesToHoursMinutes(pe.getBlockTime()));
         } else {
-            sb.append("Durée : ");
+            sb.append(getString(R.string.duration));
             sb.append(Utils.convertMinutesToHoursMinutes(pe.getBlockTime()));
         }
+
         sb.append(nl).append(nl);
-        sb.append(pe.getCrew());
+        if (!pe.getCrew().equals("")) {
+            sb.append(pe.getCrew()).append(nl).append(nl);
+        }
+        if (!pe.getTraining().equals("")) {
+            sb.append(pe.getTraining()).append(nl).append(nl);
+        }
+        if (!pe.getRemark().equals("")) {
+            sb.append(pe.getRemark()).append(nl).append(nl);
+        }
+        if (!pe.getHotelData().equals("")) {
+            sb.append(getString(R.string.hotel)).append(nl);
+            sb.append(pe.getHotelData()).append(nl).append(nl);
+        }
 
         return sb.toString();
     }

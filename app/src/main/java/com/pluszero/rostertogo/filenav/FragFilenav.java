@@ -190,10 +190,11 @@ public class FragFilenav extends Fragment {
                 fileNav.navigateUp();
                 updateList();
                 return true;
+//TODO: reactivate new folder feature
 
-            case R.id.action_new_folder:
-                showFolderNameDialogFragment();
-                return true;
+//            case R.id.action_new_folder:
+//                showFolderNameDialogFragment();
+//                return true;
 
             default:
                 return super.onOptionsItemSelected(item);

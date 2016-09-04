@@ -224,4 +224,20 @@ public class Utils {
             return 0;
         }
     }
+
+    /**
+     * split a string and trim each part
+     *
+     * @param source the string to split
+     * @param separator the regex on which to split
+     * @return String
+     */
+    public static String splitTrim(String source, String separator) {
+        String[] array = source.split(separator);
+        StringBuilder sb = new StringBuilder();
+        for (String string : array) {
+            sb.append(string.trim()).append(System.getProperty("line.separator"));
+        }
+        return sb.toString();
+    }
 }

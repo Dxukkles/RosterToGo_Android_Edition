@@ -26,4 +26,5 @@ dependencies {
     compile 'com.android.support:design:24.2.0'
     compile 'com.android.support:support-v4:24.2.0'
     compile 'com.android.support:recyclerview-v7:24.2.0'
+    compile 'org.apache:pdfbox-android:1.8.9.0'
 }
