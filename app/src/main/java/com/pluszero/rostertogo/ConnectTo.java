@@ -3,6 +3,7 @@ package com.pluszero.rostertogo;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 
@@ -11,9 +12,13 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
@@ -360,6 +365,8 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
             dosPdf.flush();
 
             pdfStream = conn.getInputStream();
+            // save the pdf file (as there seems to be a problem with using the stream directly)
+            downloadPdf(pdfStream);
 
             publishProgress(MSG_PROCESS_FINISHED);
 
@@ -398,5 +405,40 @@ public class ConnectTo extends AsyncTask<String, String, Integer> {
     protected void onPostExecute(Integer value) {
         super.onPostExecute(value);
         listener.onConnectionCompleted(value.intValue());
+    }
+
+    private void downloadPdf(InputStream is) {
+
+        // Output stream
+        FileOutputStream outputStream = null;
+        try {
+            File mydir = context.getDir("pdf", Context.MODE_PRIVATE); //Creating an internal dir;
+            File fileWithinMyDir = new File(mydir, "planning.pdf"); //Getting a file within the dir.
+            outputStream = new FileOutputStream(fileWithinMyDir); //Use the stream as usual to write into the file.
+            byte data[] = new byte[1024];
+            int count;
+
+            while ((count = is.read(data)) != -1) {
+                // writing data to file
+                outputStream.write(data, 0, count);
+            }
+            // closing streams
+            outputStream.close();
+            is.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (outputStream != null) {
+                    outputStream.close();
+                }
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException ignored) {
+            }
+        }
     }
 }

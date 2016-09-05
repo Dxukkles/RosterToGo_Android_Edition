@@ -6,9 +6,9 @@
 package com.pluszero.rostertogo;
 
 /**
- *
  * @author Cyril
  */
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +19,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
 import org.apache.pdfbox.io.RandomAccessFile;
@@ -56,6 +57,7 @@ public class PdfManager {
             alHotels = buildHotelDetailsList(text);
         } catch (IOException ex) {
         }
+
     }
 
     public PdfManager(InputStream is, HashMap<String, String> trigraphs) {
@@ -86,6 +88,7 @@ public class PdfManager {
         pdfStripper.setStartPage(1);
         pdfStripper.setEndPage(pdDoc.getNumberOfPages());
         text = pdfStripper.getText(pdDoc);
+        pdDoc.close();
     }
 
     private void ToText(InputStream is) throws IOException {
@@ -103,6 +106,7 @@ public class PdfManager {
         pdfStripper.setStartPage(1);
         pdfStripper.setEndPage(pdDoc.getNumberOfPages());
         text = pdfStripper.getText(pdDoc);
+        pdDoc.close();
     }
 
     /**
@@ -144,7 +148,7 @@ public class PdfManager {
      * @param cal the date of the activity
      * @return the crew of the flight
      */
-    public String findCrew(GregorianCalendar cal){
+    public String findCrew(GregorianCalendar cal) {
         for (int i = 0; i < alEvents.size(); i++) {
             String s = alEvents.get(i);
             // detect if part is the matching date

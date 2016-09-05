@@ -5,21 +5,17 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.os.SystemClock;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.pluszero.rostertogo.filenav.FolderNameDialogFragment;
 import com.pluszero.rostertogo.filenav.FragFilenav;
 import com.pluszero.rostertogo.filenav.OnFileNavEventListener;
 import com.pluszero.rostertogo.model.PlanningEvent;
@@ -55,6 +51,8 @@ public class ActivMain extends AppCompatActivity
     private PlanningModel planningModel;
     private ConnectTo connectTo;
     private HashMap<String, String> trigraphs;
+    private ArrayList<String> airports;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,22 +67,67 @@ public class ActivMain extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        planningModel = new PlanningModel();
         trigraphs = getTrigraphsList();
+        airports = buildAirportsDirectory();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         displayView(R.id.nav_planning);
     }
 
+    private ArrayList<String> buildAirportsDirectory() {
+        ArrayList<String> list = new ArrayList();
+        // Load airport directory from file.
+        InputStreamReader isr = new InputStreamReader(getResources().openRawResource(R.raw.airports));
+        BufferedReader br = new BufferedReader(isr, 8192);
+        try {
+            String line;
+            while ((line = br.readLine()) != null) {
+               list.add(line);
+            }
+            isr.close();
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    private HashMap<String, String> getTrigraphsList() {
+        HashMap<String, String> map = new HashMap<>();
+        String[] result;
+        // Load crew directory.
+        InputStreamReader isr = new InputStreamReader(getResources().openRawResource(R.raw.crew_directory));
+        BufferedReader br = new BufferedReader(isr, 8192);
+        try {
+            String line;
+            while ((line = br.readLine()) != null) {
+                result = line.split(";");
+                map.put(result[0], result[2] + " " + result[1]);
+            }
+            isr.close();
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return map;
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
 
+        if (planningModel == null){
+            displayFragmentLogin();
+            return;
+        }
+
         if (planningModel.getAlEvents().size() == 0) {
-            Fragment fragment = FragLogin.newInstance();
-            getFragmentManager().beginTransaction().replace(
-                    R.id.content_frame, fragment, FRAG_LOGIN).commit();
+//            Fragment fragment = FragLogin.newInstance();
+//            getFragmentManager().beginTransaction().replace(
+//                    R.id.content_frame, fragment, FRAG_LOGIN).commit();
+            displayFragmentLogin();
         }
     }
 
@@ -208,9 +251,12 @@ public class ActivMain extends AppCompatActivity
             fragLogin.getProgressBar().setVisibility(View.INVISIBLE);
             planningModel.setUserTrigraph(connectTo.getUserTrigraph());
             addToModel(extractICS(connectTo.contentIcs));
-            // get data from PDF
-            planningModel.addDataFromPDF(connectTo.pdfStream, trigraphs);
+            // get data from PDF (
+            File privateDir = getDir("pdf", Context.MODE_PRIVATE); //Creating an internal dir;
+            File pdfFile = new File(privateDir, "planning.pdf"); //Getting a file within the dir.
+            planningModel.addDataFromPDF(pdfFile, trigraphs);
             // additional work
+            planningModel.findAirportDetails();
             planningModel.copyCrew();
             planningModel.fixSplittedActivities();
             planningModel.addJoursBlanc();
@@ -242,7 +288,8 @@ public class ActivMain extends AppCompatActivity
     public void onConnectionClick(String login, String password) {
         // prevent screen from blanking
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
+        planningModel = new PlanningModel(airports);
+        planningModel.modeOnline = true;
         connectTo = (ConnectTo) new ConnectTo(this, login, password, this)
                 .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "");
 
@@ -309,34 +356,20 @@ public class ActivMain extends AppCompatActivity
         return alEvents;
     }
 
-    private HashMap<String, String> getTrigraphsList() {
-        HashMap<String, String> map = new HashMap<>();
-        String[] result;
-        // Load crew directory.
-        InputStreamReader isr = new InputStreamReader(getResources().openRawResource(R.raw.crew_directory));
-        BufferedReader br = new BufferedReader(isr, 8192);
-        try {
-            String line;
-            while ((line = br.readLine()) != null) {
-                result = line.split(";");
-                map.put(result[0], result[2] + " " + result[1]);
-            }
-            isr.close();
-            br.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return map;
-    }
-
     @Override
     public void onFilenavItemSelected(File file) {
         if (planningModel == null) {
-            planningModel = new PlanningModel();
+            planningModel = new PlanningModel(airports);
         }
         planningModel.modeOnline = false;
         addToModel(extractICS(readIcs(file)));
+        // get data from PDF (OFFLINE TESTING)
+        //******************************************************************************************
+        File privateDir = getDir("pdf", Context.MODE_PRIVATE); //Creating an internal dir;
+        File pdfFile = new File(privateDir, "planning.pdf"); //Getting a file within the dir.
+        planningModel.addDataFromPDF(pdfFile, trigraphs);
+        //******************************************************************************************
+        planningModel.findAirportDetails();
         planningModel.copyCrew();
         planningModel.fixSplittedActivities();
         planningModel.addJoursBlanc();
@@ -430,17 +463,22 @@ public class ActivMain extends AppCompatActivity
 
 
     private void displayPlanning() {
+        if (planningModel == null){
+            displayFragmentLogin();
+            return;
+        }
         FragPlanning fragment = new FragPlanning();
         fragment.setData(planningModel);
         getFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, fragment, FRAG_PLANNING).commit();
         if (getSupportActionBar() != null) {
-            if (planningModel.getUserTrigraph() != null) {
-                getSupportActionBar().setTitle("Planning (" + planningModel.getUserTrigraph() + ")");
-            } else {
+            if (planningModel == null) {
                 getSupportActionBar().setTitle("Planning");
+            } else {
+                if (planningModel.getUserTrigraph() != null){
+                    getSupportActionBar().setTitle("Planning (" + planningModel.getUserTrigraph() + ")");
+                }
             }
         }
     }
-
 }

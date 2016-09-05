@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.TimeZone;
 
 /**
- *
  * @author Cyril
  */
 public class PlanningModel {
@@ -35,9 +34,11 @@ public class PlanningModel {
     private ArrayList<PlanningEvent> alEvents;
     private ActivityFigures activityFigures;
     private String userTrigraph;    //userTrigraph of crewmember
+    private ArrayList<String> airports;
 
-    public PlanningModel() {
+    public PlanningModel(ArrayList<String> airports) {
         alEvents = new ArrayList<>();
+        this.airports = airports;
     }
 
     public ArrayList<PlanningEvent> getAlEvents() {
@@ -168,52 +169,73 @@ public class PlanningModel {
         }
     }
 
+    public void findAirportDetails() {
+        for (PlanningEvent pe : alEvents) {
+            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT) || pe.getCategory().equals(PlanningEvent.CAT_DEAD_HEAD)) {
+                for (String s : airports) {
+                    // remove quote if any
+                    s = s.replace("\"", "");
+                    String[] result = s.split(",");
+                    if (result.length > 5 && result[4].equals(pe.getIataOrig())) {
+                        pe.setAirportOrig(new Airport(result[4], result[1], result[5], result[2], result[3]));
+                    }
+                    if (result.length > 5 && result[4].equals(pe.getIataDest())) {
+                        pe.setAirportDest(new Airport(result[4], result[1], result[5], result[2], result[3]));
+                    }
+
+                    if (pe.getAirportOrig() != null && pe.getAirportDest() != null) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     // KEEP FOR OFFLINE TESTING
-//    public void addDataFromPDF(HashMap<String, String> trigraphs) {
-//        File pdfFile = new java.io.File(System.getProperty("user.home"), ".RosterToGo/planning.pdf");
-//        PdfManager manager = new PdfManager(pdfFile, trigraphs);
-//
-//        for (PlanningEvent pe : alEvents) {
-//            // Crew (when crew not present in ics file)
-//            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT) && pe.getCrew().equals("")) {
-//                String data = manager.findCrew(pe.getGcBegin());
-//                if (data != null) {
-//                    pe.setCrew(data);
-//                }
-//            }
-//            // hotel data
-//            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT) || pe.getCategory().equals(PlanningEvent.CAT_DEAD_HEAD)) {
-//                String data = manager.findHotelDetails(pe.getGcBegin());
-//                if (data != null) {
-//                    pe.setHotelData(data);
-//                }
-//            }
-//
-//            // flight remarks
-//            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT)) {
-//                String data = manager.findRemarks(
-//                        pe.getGcBegin(),
-//                        pe.getIataOrig(),
-//                        pe.getIataDest());
-//                if (data != null) {
-//                    pe.setRemark(data);
-//                }
-//            }
-//
-//            if (pe.isSimActivity()) {
-//                String data = manager.findTraining(pe.getGcBegin());
-//                if (data != null) {
-//                    pe.setCrew(data);
-//                }
-//
-//                data = manager.findRemarks(pe.getGcBegin());
-//                if (data != null) {
-//                    pe.setRemark(data);
-//                }
-//            }
-//        }
-//
-//    }
+    public void addDataFromPDF(File pdfFile, HashMap<String, String> trigraphs) {
+        PdfManager manager = new PdfManager(pdfFile, trigraphs);
+
+        for (PlanningEvent pe : alEvents) {
+            // Crew (when crew not present in ics file)
+            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT) && pe.getCrew().equals("")) {
+                String data = manager.findCrew(pe.getGcBegin());
+                if (data != null) {
+                    pe.setCrew(data);
+                }
+            }
+            // hotel data
+            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT) || pe.getCategory().equals(PlanningEvent.CAT_DEAD_HEAD)) {
+                String data = manager.findHotelDetails(pe.getGcBegin());
+                if (data != null) {
+                    pe.setHotelData(data);
+                }
+            }
+
+            // flight remarks
+            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT)) {
+                String data = manager.findRemarks(
+                        pe.getGcBegin(),
+                        pe.getIataOrig(),
+                        pe.getIataDest());
+                if (data != null) {
+                    pe.setRemark(data);
+                }
+            }
+
+            if (pe.isSimActivity()) {
+                String data = manager.findTraining(pe.getGcBegin());
+                if (data != null) {
+                    pe.setCrew(data);
+                }
+
+                data = manager.findRemarks(pe.getGcBegin());
+                if (data != null) {
+                    pe.setRemark(data);
+                }
+            }
+        }
+
+    }
 
     public void addDataFromPDF(InputStream is, HashMap<String, String> trigraphs) {
         PdfManager manager = new PdfManager(is, trigraphs);
