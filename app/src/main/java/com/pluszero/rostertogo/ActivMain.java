@@ -251,10 +251,7 @@ public class ActivMain extends AppCompatActivity
             fragLogin.getProgressBar().setVisibility(View.INVISIBLE);
             planningModel.setUserTrigraph(connectTo.getUserTrigraph());
             addToModel(extractICS(connectTo.contentIcs));
-            // get data from PDF (
-            File privateDir = getDir("pdf", Context.MODE_PRIVATE); //Creating an internal dir;
-            File pdfFile = new File(privateDir, "planning.pdf"); //Getting a file within the dir.
-            planningModel.addDataFromPDF(pdfFile, trigraphs);
+
             // additional work
             planningModel.findAirportDetails();
             planningModel.copyCrew();
@@ -263,6 +260,12 @@ public class ActivMain extends AppCompatActivity
             planningModel.factorizeDays();
             planningModel.computeActivityFigures();
             planningModel.setUserTrigraph(connectTo.getUserTrigraph());
+
+            // get data from PDF
+            // IMPORTANT : deal with PDF after previous additional work
+            File privateDir = getDir("pdf", Context.MODE_PRIVATE); //Creating an internal dir;
+            File pdfFile = new File(privateDir, "planning.pdf"); //Getting a file within the dir.
+            planningModel.addDataFromPDF(pdfFile, trigraphs);
 
             // Insert the fragment by replacing any existing fragment
             displayPlanning();
@@ -363,18 +366,22 @@ public class ActivMain extends AppCompatActivity
         }
         planningModel.modeOnline = false;
         addToModel(extractICS(readIcs(file)));
-        // get data from PDF (OFFLINE TESTING)
-        //******************************************************************************************
-        File privateDir = getDir("pdf", Context.MODE_PRIVATE); //Creating an internal dir;
-        File pdfFile = new File(privateDir, "planning.pdf"); //Getting a file within the dir.
-        planningModel.addDataFromPDF(pdfFile, trigraphs);
-        //******************************************************************************************
+
         planningModel.findAirportDetails();
         planningModel.copyCrew();
         planningModel.fixSplittedActivities();
         planningModel.addJoursBlanc();
         planningModel.factorizeDays();
         planningModel.computeActivityFigures();
+
+        // get data from PDF (OFFLINE TESTING)
+        // IMPORTANT : deal with PDF after previous additional work
+        //******************************************************************************************
+//        File privateDir = getDir("pdf", Context.MODE_PRIVATE); //Creating an internal dir;
+//        File pdfFile = new File(privateDir, "planning.pdf"); //Getting a file within the dir.
+//        planningModel.addDataFromPDF(pdfFile, trigraphs);
+        //******************************************************************************************
+
         // Insert the fragment by replacing any existing fragment
         FragPlanning fragment = new FragPlanning();
         fragment.setData(planningModel);

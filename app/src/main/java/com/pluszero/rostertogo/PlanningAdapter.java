@@ -1,7 +1,6 @@
 package com.pluszero.rostertogo;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +23,7 @@ public class PlanningAdapter extends ArrayAdapter<PlanningEvent> {
 
     private final DateFormatSymbols dfs = new DateFormatSymbols();
     private final String[] shortDays = new String[]{"", "Di", "Lu", "Ma", "Me", "Je", "Ve", "Sa"};
-    private final String[] shortMonths = new String[]{"Jan", "Fév", "Mar", "Avr", "Mai", "Jui", "Jul", "Aou", "Sep", "Nov", "Déc"};
+    private final String[] shortMonths = new String[]{"Jan", "Fév", "Mar", "Avr", "Mai", "Jui", "Jul", "Aou", "Sep", "Oct", "Nov", "Déc"};
     private final SimpleDateFormat sdfDate;
     private final SimpleDateFormat sdfHour;
 

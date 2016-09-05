@@ -47,8 +47,8 @@ public class PdfManager {
 
     // KEEP FOR OFFLINE TESTING
     public PdfManager(File file, HashMap<String, String> trigraphs) {
-        sdf = new SimpleDateFormat("E dd/MM/yyyy", dfs);
         dfs.setShortWeekdays(shortDays);
+        sdf = new SimpleDateFormat("E dd/MM/yyyy", dfs);
         this.trigraphs = trigraphs;
 
         try {
@@ -61,8 +61,8 @@ public class PdfManager {
     }
 
     public PdfManager(InputStream is, HashMap<String, String> trigraphs) {
-        sdf = new SimpleDateFormat("E dd/MM/yyyy", dfs);
         dfs.setShortWeekdays(shortDays);
+        sdf = new SimpleDateFormat("E dd/MM/yyyy", dfs);
         this.trigraphs = trigraphs;
 
         try {
