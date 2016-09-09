@@ -26,15 +26,10 @@
             android:id="@+id/nav_settings"
             android:title="Préférences" />
     </group>
-    <group android:id="@+id/group_communication">
+
+    <group android:id="@+id/group_about">
         <item
-            android:id="@+id/nav_web"
-            android:title="Visiter le site web" />
-        <item
-            android:id="@+id/nav_mail"
-            android:title="Envoyer un e-mail" />
-    </group>
-    <group android:id="@+id/group_credits">
-        <item android:title="@string/about" />
+            android:id="@+id/nav_about"
+            android:title="@string/about" />
     </group>
 </menu>

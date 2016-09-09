@@ -83,7 +83,7 @@ public class ActivMain extends AppCompatActivity
         try {
             String line;
             while ((line = br.readLine()) != null) {
-               list.add(line);
+                list.add(line);
             }
             isr.close();
             br.close();
@@ -118,7 +118,7 @@ public class ActivMain extends AppCompatActivity
     protected void onResume() {
         super.onResume();
 
-        if (planningModel == null){
+        if (planningModel == null) {
             displayFragmentLogin();
             return;
         }
@@ -175,6 +175,10 @@ public class ActivMain extends AppCompatActivity
             case R.id.nav_save: // save as XML
                 displayFragmentSave();
                 break;
+
+            case R.id.nav_about:
+                displayFragmentAbout();
+                break;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -224,6 +228,15 @@ public class ActivMain extends AppCompatActivity
                 .commit();
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Préférences");
+        }
+    }
+
+    private void displayFragmentAbout() {
+        Fragment fragment = new FragAbout();
+        getFragmentManager().beginTransaction().replace(
+                R.id.content_frame, fragment, FRAG_ABOUT).commit();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(getString(R.string.about));
         }
     }
 
@@ -470,7 +483,7 @@ public class ActivMain extends AppCompatActivity
 
 
     private void displayPlanning() {
-        if (planningModel == null){
+        if (planningModel == null) {
             displayFragmentLogin();
             return;
         }
@@ -482,7 +495,7 @@ public class ActivMain extends AppCompatActivity
             if (planningModel == null) {
                 getSupportActionBar().setTitle("Planning");
             } else {
-                if (planningModel.getUserTrigraph() != null){
+                if (planningModel.getUserTrigraph() != null) {
                     getSupportActionBar().setTitle("Planning (" + planningModel.getUserTrigraph() + ")");
                 }
             }

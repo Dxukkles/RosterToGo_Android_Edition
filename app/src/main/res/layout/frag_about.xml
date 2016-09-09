@@ -12,7 +12,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/please_register_to_access_your_roster"
+        android:text="@string/version_number"
         android:id="@+id/textView4"
         android:gravity="center"
         android:layout_above="@+id/linlayPassword"
@@ -32,16 +32,17 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/login"
+            android:text="@string/development"
             android:id="@+id/textView2"
             android:layout_weight="1" />
 
-        <EditText
-            android:layout_width="128dp"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/etLogin"
-            android:inputType="textCapCharacters"
-            android:maxLength="3" />
+            android:text="@string/cyril_real"
+            android:id="@+id/textView5"
+            />
+
     </LinearLayout>
 
     <LinearLayout
@@ -57,43 +58,17 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/password"
+            android:text="Contact : "
             android:id="@+id/textView3"
             android:layout_weight="1" />
 
-        <EditText
-            android:layout_width="128dp"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="textPassword"
-            android:ems="10"
-            android:id="@+id/etPassword" />
+            android:text="@string/rostertogo_at_free_fr"
+            android:id="@+id/tvMailAdress"
+            />
 
     </LinearLayout>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@android:string/ok"
-        android:id="@+id/btnOk"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/linlayPassword"
-        android:layout_margin="24dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/ready"
-        android:id="@+id/tvStatus"
-        android:layout_below="@+id/pbStatus"
-        android:layout_centerHorizontal="true" />
-
-    <ProgressBar
-        style="?android:attr/progressBarStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/pbStatus"
-        android:visibility="invisible"
-        android:layout_below="@+id/btnOk"
-        android:layout_centerHorizontal="true" />
 
 </LinearLayout>
