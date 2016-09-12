@@ -178,6 +178,10 @@ public class PlanningEvent {
         result = pattern.matcher(summary);
         while (result.find()) {
             String lag = result.group(0).substring(1, 4);
+            // remove the + sign as Jellybean/Kitkat can't parse it
+            if (lag.charAt(0) == '+'){
+                lag = lag.substring(1);
+            }
             lagDest = Integer.parseInt(lag);
             return;
         }
@@ -231,6 +235,9 @@ public class PlanningEvent {
                 return true;
 
             case PlanningEvent.CAT_OFF_DDA:
+                return true;
+
+            case PlanningEvent.CAT_OFF_RECUP:
                 return true;
 
             case PlanningEvent.CAT_VACATION:

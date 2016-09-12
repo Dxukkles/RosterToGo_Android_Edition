@@ -9,6 +9,9 @@ package com.pluszero.rostertogo;
  * @author Cyril
  */
 
+import android.content.Context;
+import android.os.AsyncTask;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,15 +22,12 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
-import org.apache.pdfbox.io.RandomAccessFile;
 import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
-public class PdfManager {
+public class PdfManager extends AsyncTask<String, String, Integer> {
 
     private PDFParser parser;
     private PDFTextStripper pdfStripper;
@@ -46,7 +46,7 @@ public class PdfManager {
     private String newline = System.getProperty("line.separator");
 
     // KEEP FOR OFFLINE TESTING
-    public PdfManager(File file, HashMap<String, String> trigraphs) {
+    public PdfManager(File file, HashMap<String, String> trigraphs, Context context, OnPdfManagerListener listener) {
         dfs.setShortWeekdays(shortDays);
         sdf = new SimpleDateFormat("E dd/MM/yyyy", dfs);
         this.trigraphs = trigraphs;
@@ -371,5 +371,10 @@ public class PdfManager {
         }
 
         return list;
+    }
+
+    @Override
+    protected Integer doInBackground(String... params) {
+        return null;
     }
 }

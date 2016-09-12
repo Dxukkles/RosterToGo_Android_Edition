@@ -260,8 +260,7 @@ public class ActivMain extends AppCompatActivity
             if (fragLogin == null) {
                 return;
             }
-            fragLogin.getBtnOK().setEnabled(true);
-            fragLogin.getProgressBar().setVisibility(View.INVISIBLE);
+
             planningModel.setUserTrigraph(connectTo.getUserTrigraph());
             addToModel(extractICS(connectTo.contentIcs));
 
@@ -280,6 +279,9 @@ public class ActivMain extends AppCompatActivity
             File pdfFile = new File(privateDir, "planning.pdf"); //Getting a file within the dir.
             planningModel.addDataFromPDF(pdfFile, trigraphs);
 
+            // reset button and close progressbar
+            fragLogin.getBtnOK().setEnabled(true);
+            fragLogin.getProgressBar().setVisibility(View.INVISIBLE);
             // Insert the fragment by replacing any existing fragment
             displayPlanning();
         } else if (connectionResult == ConnectTo.ERR_ROSTER_NOT_SIGNED) {
