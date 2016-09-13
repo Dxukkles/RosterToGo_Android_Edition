@@ -66,8 +66,8 @@
     <string name="development">Développement : </string>
     <string name="rostertogo_at_free_fr">rostertogo@free.fr</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="planning_generation_in_progress">"Génération du planning en cours.\nMerci de patienter quelques secondes..."</string>
+    <string name="planning_synchronisation_in_progress">"Synchronisation du planning en cours.\nMerci de patienter quelques secondes..."</string>
 
 
 </resources>

@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Calendars;
@@ -25,12 +26,13 @@ import java.util.TimeZone;
 /**
  * Created by Cyril on 09/05/2016.
  */
-public class SyncPlanning {
+public class SyncPlanning extends AsyncTask<String, String, Integer>{
 
     private Context context;
     private HashMap<String, String> mapCalendars;
     private String accountName;
     private PlanningModel model;
+    private OnSynchronisationListener listener;
 
     // Projection array. Creating indices for this array instead of doing
     // dynamic lookups improves performance.
@@ -48,17 +50,44 @@ public class SyncPlanning {
     private static final int PROJECTION_OWNER_ACCOUNT_INDEX = 3;
 
 
-    public SyncPlanning(Context context) {
-        this.context = context;
-        queryUserCalendars();
-    }
+//    public SyncPlanning(Context context) {
+//        this.context = context;
+//        queryUserCalendars();
+//    }
 
-    public SyncPlanning(Context context, PlanningModel model) {
+    public SyncPlanning(Context context, PlanningModel model, OnSynchronisationListener listener) {
         this.context = context;
         this.model = model;
+        this.listener = listener;
+
+    }
+
+    @Override
+    protected Integer doInBackground(String... params) {
+        publishProgress("Récupération de la liste des calendriers");
         queryUserCalendars();
+        publishProgress("Effacement des anciens évenements");
         deleteOldEvents();
+        publishProgress("Ajout des nouveaux évenements");
         addEvents(this.model);
+        return 1;
+    }
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+    }
+
+    @Override
+    protected void onProgressUpdate(String... values) {
+        super.onProgressUpdate(values);
+        listener.onSynchronisationProgress(values);
+    }
+
+    @Override
+    protected void onPostExecute(Integer value) {
+        super.onPostExecute(value);
+        listener.onSynchronisationCompleted(value.intValue());
     }
 
     private void queryUserCalendars() {
@@ -144,7 +173,7 @@ public class SyncPlanning {
                     if (uid2445 == null) {
                         continue;
                     } else if (uid2445.contains("_ROSTERTOGO_" + model.getUserTrigraph())) {
-                            rosterEvents.add(eventId);
+                        rosterEvents.add(eventId);
                     }
                 }
             }
@@ -156,14 +185,6 @@ public class SyncPlanning {
             // do something with rows, if necessary...
             Log.i("ROSTERTOGO", "Rows deleted: " + rows);
         }
-
-//        String[] selArgs = new String[]{"1078"};
-//        int deleted = context.getContentResolver().delete(
-//                CalendarContract.Events.CONTENT_URI,
-//                CalendarContract.Events._ID + " =? ",
-//                selArgs);
-//        Log.i("ROSTERTOGO", "Rows deleted: " + deleted);
-
     }
 
     private String buildSummary(PlanningEvent pe) {
@@ -247,4 +268,5 @@ public class SyncPlanning {
     public HashMap<String, String> getMapCalendars() {
         return mapCalendars;
     }
+
 }

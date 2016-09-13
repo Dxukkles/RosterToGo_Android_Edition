@@ -2,9 +2,9 @@ package com.pluszero.rostertogo;
 
 import android.app.DialogFragment;
 import android.app.Fragment;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.pluszero.rostertogo.filenav.FragFilenav;
 import com.pluszero.rostertogo.filenav.OnFileNavEventListener;
 import com.pluszero.rostertogo.model.PlanningEvent;
+import com.pluszero.rostertogo.model.PlanningGenerator;
 import com.pluszero.rostertogo.model.PlanningModel;
 
 import java.io.BufferedReader;
@@ -38,7 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ActivMain extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, OnConnectionListener, OnFileNavEventListener {
+        implements NavigationView.OnNavigationItemSelectedListener, OnConnectionListener, OnFileNavEventListener, OnPlanningGeneratorListener, OnSynchronisationListener {
 
     public static final String FRAG_LOGIN = "frgmt_connexion";
     public static final String FRAG_LOAD = "frag_load_xml";
@@ -52,7 +53,6 @@ public class ActivMain extends AppCompatActivity
     private ConnectTo connectTo;
     private HashMap<String, String> trigraphs;
     private ArrayList<String> airports;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +73,7 @@ public class ActivMain extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         displayView(R.id.nav_planning);
+
     }
 
     private ArrayList<String> buildAirportsDirectory() {
@@ -157,7 +158,7 @@ public class ActivMain extends AppCompatActivity
                 break;
 
             case R.id.nav_sync_calendar:
-                SyncPlanning sp = new SyncPlanning(this, planningModel);
+                launchSynchronisation();
                 break;
 
             case R.id.nav_planning:
@@ -256,49 +257,32 @@ public class ActivMain extends AppCompatActivity
         // resume normal screen behavior
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (connectionResult == ConnectTo.OK_CONNECTION) {
-            FragLogin fragLogin = (FragLogin) getFragmentManager().findFragmentByTag(FRAG_LOGIN);
-            if (fragLogin == null) {
-                return;
-            }
+            PlanningGenerator planningGenerator = new PlanningGenerator(this, this);
+            planningGenerator.setConnectTo(connectTo);
+            planningGenerator.setPlanningModel(planningModel);
+            planningGenerator.setTrigraphs(trigraphs);
+            planningGenerator.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "");
 
-            planningModel.setUserTrigraph(connectTo.getUserTrigraph());
-            addToModel(extractICS(connectTo.contentIcs));
-
-            // additional work
-            planningModel.findAirportDetails();
-            planningModel.copyCrew();
-            planningModel.fixSplittedActivities();
-            planningModel.addJoursBlanc();
-            planningModel.factorizeDays();
-            planningModel.computeActivityFigures();
-            planningModel.setUserTrigraph(connectTo.getUserTrigraph());
-
-            // get data from PDF
-            // IMPORTANT : deal with PDF after previous additional work
-            File privateDir = getDir("pdf", Context.MODE_PRIVATE); //Creating an internal dir;
-            File pdfFile = new File(privateDir, "planning.pdf"); //Getting a file within the dir.
-            planningModel.addDataFromPDF(pdfFile, trigraphs);
-
-            // reset button and close progressbar
-            fragLogin.getBtnOK().setEnabled(true);
-            fragLogin.getProgressBar().setVisibility(View.INVISIBLE);
-            // Insert the fragment by replacing any existing fragment
-            displayPlanning();
         } else if (connectionResult == ConnectTo.ERR_ROSTER_NOT_SIGNED) {
             DialogFragment newFragment = MyAlertDialog.newInstance("Attention", getString(R.string.err_msg_planning_not_signed));
             newFragment.show(getFragmentManager(), "alert");
+            resetFragmentLogin();
         } else if (connectionResult == ConnectTo.ERR_MODIFICATIONS_NOT_CHECKED) {
             DialogFragment newFragment = MyAlertDialog.newInstance("Attention", getString(R.string.err_msg_modifications_not_checked));
             newFragment.show(getFragmentManager(), "alert");
+            resetFragmentLogin();
         } else if (connectionResult == ConnectTo.ERR_CONNECTION) {
             DialogFragment newFragment = MyAlertDialog.newInstance("Attention", getString(R.string.err_msg_connection));
             newFragment.show(getFragmentManager(), "alert");
+            resetFragmentLogin();
         } else if (connectionResult == ConnectTo.ERR_LOGIN_PASS) {
             DialogFragment newFragment = MyAlertDialog.newInstance("Attention", getString(R.string.err_msg_login_pass));
             newFragment.show(getFragmentManager(), "alert");
+            resetFragmentLogin();
         } else if (connectionResult == ConnectTo.ERR_MISC) {
             DialogFragment newFragment = MyAlertDialog.newInstance("Attention", getString(R.string.err_msg_misc));
             newFragment.show(getFragmentManager(), "alert");
+            resetFragmentLogin();
         }
     }
 
@@ -376,39 +360,20 @@ public class ActivMain extends AppCompatActivity
 
     @Override
     public void onFilenavItemSelected(File file) {
+
+        DialProgress dialProgress = DialProgress.newInstance(getString(R.string.planning_generation_in_progress));
+        dialProgress.show(getFragmentManager(), DialProgress.TAG_PLANNING_GENERATION);
+
         if (planningModel == null) {
             planningModel = new PlanningModel(airports);
         }
         planningModel.modeOnline = false;
-        addToModel(extractICS(readIcs(file)));
 
-        planningModel.findAirportDetails();
-        planningModel.copyCrew();
-        planningModel.fixSplittedActivities();
-        planningModel.addJoursBlanc();
-        planningModel.factorizeDays();
-        planningModel.computeActivityFigures();
-
-        // get data from PDF (OFFLINE TESTING)
-        // IMPORTANT : deal with PDF after previous additional work
-        //******************************************************************************************
-//        File privateDir = getDir("pdf", Context.MODE_PRIVATE); //Creating an internal dir;
-//        File pdfFile = new File(privateDir, "planning.pdf"); //Getting a file within the dir.
-//        planningModel.addDataFromPDF(pdfFile, trigraphs);
-        //******************************************************************************************
-
-        // Insert the fragment by replacing any existing fragment
-        FragPlanning fragment = new FragPlanning();
-        fragment.setData(planningModel);
-        getFragmentManager().beginTransaction()
-                .replace(R.id.content_frame, fragment, FRAG_PLANNING).commit();
-        if (getSupportActionBar() != null) {
-            if (planningModel.getUserTrigraph() != null) {
-                getSupportActionBar().setTitle("Planning (" + planningModel.getUserTrigraph() + ")");
-            } else {
-                getSupportActionBar().setTitle("Planning");
-            }
-        }
+        PlanningGenerator planningGenerator = new PlanningGenerator(this, this);
+        planningGenerator.setIcsContent(readIcs(file));
+        planningGenerator.setPlanningModel(planningModel);
+        planningGenerator.setTrigraphs(trigraphs);
+        planningGenerator.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "");
     }
 
     @Override
@@ -501,6 +466,57 @@ public class ActivMain extends AppCompatActivity
                     getSupportActionBar().setTitle("Planning (" + planningModel.getUserTrigraph() + ")");
                 }
             }
+        }
+    }
+
+    @Override
+    public void onPlanningGeneratorProgress(String... messages) {
+        FragLogin fragLogin = (FragLogin) getFragmentManager().findFragmentByTag(FRAG_LOGIN);
+        if (fragLogin == null) {
+            return;
+        }
+        fragLogin.setConnectionStatus(messages[0]);
+    }
+
+    @Override
+    public void onPlanningGeneratorCompleted(int result) {
+        if (result == PlanningGenerator.PLANNING_OK) {
+            resetFragmentLogin();
+            displayPlanning();
+        }
+
+        DialProgress dialog = (DialProgress) getFragmentManager().findFragmentByTag(DialProgress.TAG_PLANNING_GENERATION);
+        if (dialog != null) {
+            dialog.dismiss();
+        }
+    }
+
+    private void resetFragmentLogin() {
+        FragLogin fragLogin = (FragLogin) getFragmentManager().findFragmentByTag(FRAG_LOGIN);
+        if (fragLogin == null) {
+            return;
+        }
+        // reset button and close progressbar
+        fragLogin.getBtnOK().setEnabled(true);
+        fragLogin.getProgressBar().setVisibility(View.INVISIBLE);
+    }
+
+    private void launchSynchronisation() {
+        final DialProgress dialProgress = DialProgress.newInstance(getString(R.string.planning_synchronisation_in_progress));
+        dialProgress.show(getFragmentManager(), DialProgress.TAG_PLANNING_SYNCHRONISATION);
+        SyncPlanning sp = new SyncPlanning(this, planningModel, this);
+        sp.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "");
+    }
+
+    @Override
+    public void onSynchronisationProgress(String... messages) {
+    }
+
+    @Override
+    public void onSynchronisationCompleted(int value) {
+        DialProgress dialog = (DialProgress) getFragmentManager().findFragmentByTag(DialProgress.TAG_PLANNING_SYNCHRONISATION);
+        if (dialog != null) {
+            dialog.dismiss();
         }
     }
 }

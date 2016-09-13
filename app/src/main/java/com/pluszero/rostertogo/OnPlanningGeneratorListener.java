@@ -8,8 +8,8 @@ package com.pluszero.rostertogo;
 /**
  * @author Cyril
  */
-public interface OnPdfManagerListener {
-    public void onPdfManagerProgress(String... messages);
+public interface OnPlanningGeneratorListener {
+    public void onPlanningGeneratorProgress(String... messages);
 
-    public void onPdfManagerCompleted(int value);
+    public void onPlanningGeneratorCompleted(int value);
 }

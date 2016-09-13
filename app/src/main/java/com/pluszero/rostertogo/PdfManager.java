@@ -10,7 +10,6 @@ package com.pluszero.rostertogo;
  */
 
 import android.content.Context;
-import android.os.AsyncTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +26,7 @@ import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
-public class PdfManager extends AsyncTask<String, String, Integer> {
+public class PdfManager {
 
     private PDFParser parser;
     private PDFTextStripper pdfStripper;
@@ -46,7 +45,7 @@ public class PdfManager extends AsyncTask<String, String, Integer> {
     private String newline = System.getProperty("line.separator");
 
     // KEEP FOR OFFLINE TESTING
-    public PdfManager(File file, HashMap<String, String> trigraphs, Context context, OnPdfManagerListener listener) {
+    public PdfManager(File file, HashMap<String, String> trigraphs) {
         dfs.setShortWeekdays(shortDays);
         sdf = new SimpleDateFormat("E dd/MM/yyyy", dfs);
         this.trigraphs = trigraphs;
@@ -371,10 +370,5 @@ public class PdfManager extends AsyncTask<String, String, Integer> {
         }
 
         return list;
-    }
-
-    @Override
-    protected Integer doInBackground(String... params) {
-        return null;
     }
 }
