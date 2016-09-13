@@ -26,13 +26,22 @@ import java.util.TimeZone;
 /**
  * Created by Cyril on 09/05/2016.
  */
-public class SyncPlanning extends AsyncTask<String, String, Integer>{
+public class SyncPlanning extends AsyncTask<String, String, Integer> {
+
+    public static final String CALENDAR_FLIGHT = "calendar_flight";
+    public static final String CALENDAR_GROUND = "calendar_ground";
+    public static final String CALENDAR_OFF = "calendar_off";
+    public static final String CALENDAR_VACATION = "calendar_vacation";
+    public static final String CALENDAR_BLANC = "calendar_blanc";
+    public static final String CALENDAR_EVENTS_DELETE = "calendar_events_delete";
 
     private Context context;
     private HashMap<String, String> mapCalendars;
     private String accountName;
     private PlanningModel model;
     private OnSynchronisationListener listener;
+
+    public int events_ok, events_err;
 
     // Projection array. Creating indices for this array instead of doing
     // dynamic lookups improves performance.
@@ -52,6 +61,7 @@ public class SyncPlanning extends AsyncTask<String, String, Integer>{
 
     /**
      * This constructor is used by the application to get the list of available calendars
+     *
      * @param context
      */
     public SyncPlanning(Context context) {
@@ -130,9 +140,83 @@ public class SyncPlanning extends AsyncTask<String, String, Integer>{
 
         for (PlanningEvent pe : model.getAlEvents()) {
 
-            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT) || pe.getCategory().equals(PlanningEvent.CAT_DEAD_HEAD)) {
+            //TODO: deal with allday events !
+
+            if (getExportType(pe).equals(CALENDAR_FLIGHT)){
                 HashSet calsFlight = (HashSet) sharedPref.getStringSet("pref_google_calendar_flight", new HashSet<String>());
                 for (Object obj : calsFlight) {
+                    ContentValues values = new ContentValues();
+                    values.put(CalendarContract.Events.UID_2445, cal.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
+                    values.put(CalendarContract.Events.DTSTART, pe.getGcBegin().getTimeInMillis());
+                    values.put(CalendarContract.Events.DTEND, pe.getGcEnd().getTimeInMillis());
+                    values.put(CalendarContract.Events.TITLE, buildSummary(pe));
+                    values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
+                    values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
+                    values.put(CalendarContract.Events.EVENT_TIMEZONE, timezone);
+                    Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+                    long eventID = Long.parseLong(uri.getLastPathSegment());
+
+                    break;
+                }
+            }
+
+            if (getExportType(pe).equals(CALENDAR_GROUND)){
+                HashSet calsGround = (HashSet) sharedPref.getStringSet("pref_google_calendar_ground", new HashSet<String>());
+                for (Object obj : calsGround) {
+                    ContentValues values = new ContentValues();
+                    values.put(CalendarContract.Events.UID_2445, cal.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
+                    values.put(CalendarContract.Events.DTSTART, pe.getGcBegin().getTimeInMillis());
+                    values.put(CalendarContract.Events.DTEND, pe.getGcEnd().getTimeInMillis());
+                    values.put(CalendarContract.Events.TITLE, buildSummary(pe));
+                    values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
+                    values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
+                    values.put(CalendarContract.Events.EVENT_TIMEZONE, timezone);
+                    Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+                    long eventID = Long.parseLong(uri.getLastPathSegment());
+
+                    break;
+                }
+            }
+
+            if (getExportType(pe).equals(CALENDAR_OFF)){
+                HashSet calsOff = (HashSet) sharedPref.getStringSet("pref_google_calendar_daysoff", new HashSet<String>());
+                for (Object obj : calsOff) {
+                    ContentValues values = new ContentValues();
+                    values.put(CalendarContract.Events.UID_2445, cal.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
+                    values.put(CalendarContract.Events.DTSTART, pe.getGcBegin().getTimeInMillis());
+                    values.put(CalendarContract.Events.DTEND, pe.getGcEnd().getTimeInMillis());
+                    values.put(CalendarContract.Events.TITLE, buildSummary(pe));
+                    values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
+                    values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
+                    values.put(CalendarContract.Events.EVENT_TIMEZONE, timezone);
+                    Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+                    long eventID = Long.parseLong(uri.getLastPathSegment());
+
+                    break;
+                }
+            }
+
+            if (getExportType(pe).equals(CALENDAR_VACATION)){
+                HashSet calsVacation = (HashSet) sharedPref.getStringSet("pref_google_calendar_vacation", new HashSet<String>());
+                for (Object obj : calsVacation) {
+                    ContentValues values = new ContentValues();
+                    values.put(CalendarContract.Events.UID_2445, cal.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
+                    values.put(CalendarContract.Events.DTSTART, pe.getGcBegin().getTimeInMillis());
+                    values.put(CalendarContract.Events.DTEND, pe.getGcEnd().getTimeInMillis());
+                    values.put(CalendarContract.Events.TITLE, buildSummary(pe));
+                    values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
+                    values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
+                    values.put(CalendarContract.Events.EVENT_TIMEZONE, timezone);
+                    Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+                    long eventID = Long.parseLong(uri.getLastPathSegment());
+
+                    break;
+                }
+            }
+
+            if (getExportType(pe).equals(CALENDAR_BLANC)){
+                HashSet calsBlanc = (HashSet) sharedPref.getStringSet("pref_google_calendar_dayswhite", new HashSet<String>());
+                for (Object obj : calsBlanc) {
                     ContentValues values = new ContentValues();
                     values.put(CalendarContract.Events.UID_2445, cal.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
                     values.put(CalendarContract.Events.DTSTART, pe.getGcBegin().getTimeInMillis());
@@ -273,4 +357,45 @@ public class SyncPlanning extends AsyncTask<String, String, Integer>{
         return mapCalendars;
     }
 
+    private String getExportType(PlanningEvent event) {
+        switch (event.getCategory()) {
+            case PlanningEvent.CAT_FLIGHT:
+                return CALENDAR_FLIGHT;
+            case PlanningEvent.CAT_DEAD_HEAD:
+                return CALENDAR_FLIGHT;
+            case PlanningEvent.CAT_HOTEL:
+                return CALENDAR_GROUND;
+            case PlanningEvent.CAT_SYND:
+                return CALENDAR_GROUND;
+            case PlanningEvent.CAT_ILLNESS:
+                return CALENDAR_OFF;
+            case PlanningEvent.CAT_MEDICAL:
+                return CALENDAR_GROUND;
+            case PlanningEvent.CAT_OFF:
+                return CALENDAR_OFF;
+            case PlanningEvent.CAT_OFF_DDA:
+                return CALENDAR_OFF;
+            case PlanningEvent.CAT_OFF_RECUP:
+                return CALENDAR_OFF;
+            case PlanningEvent.CAT_SIMU:
+                return CALENDAR_GROUND;
+            case PlanningEvent.CAT_SIM_C1:
+                return CALENDAR_GROUND;
+            case PlanningEvent.CAT_SIM_C2:
+                return CALENDAR_GROUND;
+            case PlanningEvent.CAT_SIM_E1:
+                return CALENDAR_GROUND;
+            case PlanningEvent.CAT_SIM_E2:
+                return CALENDAR_GROUND;
+            case PlanningEvent.CAT_SIM_LOE:
+                return CALENDAR_GROUND;
+            case PlanningEvent.CAT_VACATION:
+                return CALENDAR_VACATION;
+            case PlanningEvent.CAT_BLANC:
+                return CALENDAR_BLANC;
+
+            default:
+                return CALENDAR_FLIGHT;
+        }
+    }
 }
