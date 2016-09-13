@@ -518,5 +518,11 @@ public class ActivMain extends AppCompatActivity
         if (dialog != null) {
             dialog.dismiss();
         }
+        if (value == 1) {
+            Toast.makeText(this, getString(R.string.synchronisation_successful), Toast.LENGTH_SHORT).show();
+        } else {
+            DialogFragment newFragment = MyAlertDialog.newInstance(null, getString(R.string.error_during_synchronisation));
+            newFragment.show(getFragmentManager(), "alert");
+        }
     }
 }

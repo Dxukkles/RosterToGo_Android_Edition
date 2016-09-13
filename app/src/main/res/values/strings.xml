@@ -60,6 +60,9 @@
     <string name="err_msg_planning_not_signed">Le planning n\'a pas été signé</string>
     <string name="err_msg_misc">Erreur non déterminée</string>
     <string name="please_register_to_access_your_roster">Merci de vous identifier pour\naccéder à l\'application</string>
+    <string name="error_during_synchronisation">Erreur durant la synchronisation...</string>
+
+    <string name="synchronisation_successful">Synchronisation réussie !</string>
     <string name="login">Login</string>
     <string name="password">Mot de passe</string>
     <string name="ready">Prêt...</string>

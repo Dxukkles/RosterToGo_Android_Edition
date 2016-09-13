@@ -50,10 +50,14 @@ public class SyncPlanning extends AsyncTask<String, String, Integer>{
     private static final int PROJECTION_OWNER_ACCOUNT_INDEX = 3;
 
 
-//    public SyncPlanning(Context context) {
-//        this.context = context;
-//        queryUserCalendars();
-//    }
+    /**
+     * This constructor is used by the application to get the list of available calendars
+     * @param context
+     */
+    public SyncPlanning(Context context) {
+        this.context = context;
+        queryUserCalendars();
+    }
 
     public SyncPlanning(Context context, PlanningModel model, OnSynchronisationListener listener) {
         this.context = context;
@@ -126,7 +130,7 @@ public class SyncPlanning extends AsyncTask<String, String, Integer>{
 
         for (PlanningEvent pe : model.getAlEvents()) {
 
-            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT)) {
+            if (pe.getCategory().equals(PlanningEvent.CAT_FLIGHT) || pe.getCategory().equals(PlanningEvent.CAT_DEAD_HEAD)) {
                 HashSet calsFlight = (HashSet) sharedPref.getStringSet("pref_google_calendar_flight", new HashSet<String>());
                 for (Object obj : calsFlight) {
                     ContentValues values = new ContentValues();
