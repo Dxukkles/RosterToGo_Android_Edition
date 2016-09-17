@@ -62,9 +62,11 @@ public class PlanningGenerator extends AsyncTask<String, String, Integer> {
 
         // get data from PDF
         // IMPORTANT : deal with PDF after previous additional work
-        File privateDir = context.getDir("pdf", Context.MODE_PRIVATE); //Creating an internal dir;
-        File pdfFile = new File(privateDir, "planning.pdf"); //Getting a file within the dir.
-        planningModel.addDataFromPDF(pdfFile, trigraphs);
+        if(planningModel.modeOnline){
+            File privateDir = context.getDir("pdf", Context.MODE_PRIVATE); //Creating an internal dir;
+            File pdfFile = new File(privateDir, "planning.pdf"); //Getting a file within the dir.
+            planningModel.addDataFromPDF(pdfFile, trigraphs);
+        }
 
         return PLANNING_OK;
     }

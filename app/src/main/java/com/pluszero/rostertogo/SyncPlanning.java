@@ -132,7 +132,8 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         // dateformatter for UID, STAMP...
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
-        String timezone = TimeZone.getDefault().getID();
+        TimeZone timeZone;
+        String strTimeZone = TimeZone.getDefault().getID();
         // calendar for ics time generation id
         GregorianCalendar calStamp = new GregorianCalendar();
         long calID = 1;
@@ -145,6 +146,7 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
             Calendar endTime = GregorianCalendar.getInstance();
 //TODO: fix bug of allday events spanning on 2 days by setting time zone to UTC and allday value to 1
             if (pe.isDayEvent()) {
+                timeZone = TimeZone.getTimeZone("UTC");
                 beginTime.set(
                         pe.getGcBegin().get(Calendar.YEAR),
                         pe.getGcBegin().get(Calendar.MONTH),
@@ -155,6 +157,7 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
                         pe.getGcBegin().get(Calendar.DAY_OF_MONTH));
                 endTime.add(Calendar.DATE, 1);
             } else {
+                timeZone = TimeZone.getDefault();
                 beginTime.setTimeInMillis(pe.getGcBegin().getTimeInMillis());
                 endTime.setTimeInMillis(pe.getGcEnd().getTimeInMillis());
             }
@@ -162,6 +165,7 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
             if (getExportType(pe).equals(CALENDAR_FLIGHT)) {
                 HashSet calsFlight = (HashSet) sharedPref.getStringSet("pref_google_calendar_flight", new HashSet<String>());
                 for (Object obj : calsFlight) {
+
                     ContentValues values = new ContentValues();
                     values.put(CalendarContract.Events.UID_2445, calStamp.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
                     values.put(CalendarContract.Events.DTSTART, beginTime.getTimeInMillis());
@@ -169,11 +173,9 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
                     values.put(CalendarContract.Events.TITLE, buildSummary(pe));
                     values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
                     values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
-                    values.put(CalendarContract.Events.EVENT_TIMEZONE, timezone);
+                    values.put(CalendarContract.Events.EVENT_TIMEZONE, timeZone.getID());
                     Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
                     long eventID = Long.parseLong(uri.getLastPathSegment());
-
-                    break;
                 }
             }
 
@@ -181,17 +183,18 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
                 HashSet calsGround = (HashSet) sharedPref.getStringSet("pref_google_calendar_ground", new HashSet<String>());
                 for (Object obj : calsGround) {
                     ContentValues values = new ContentValues();
+                    if (pe.isDayEvent()){
+                        values.put(CalendarContract.Events.ALL_DAY, 1);
+                    }
                     values.put(CalendarContract.Events.UID_2445, calStamp.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
                     values.put(CalendarContract.Events.DTSTART, beginTime.getTimeInMillis());
                     values.put(CalendarContract.Events.DTEND, endTime.getTimeInMillis());
                     values.put(CalendarContract.Events.TITLE, buildSummary(pe));
                     values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
                     values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
-                    values.put(CalendarContract.Events.EVENT_TIMEZONE, timezone);
+                    values.put(CalendarContract.Events.EVENT_TIMEZONE, strTimeZone);
                     Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
                     long eventID = Long.parseLong(uri.getLastPathSegment());
-
-                    break;
                 }
             }
 
@@ -199,17 +202,18 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
                 HashSet calsOff = (HashSet) sharedPref.getStringSet("pref_google_calendar_daysoff", new HashSet<String>());
                 for (Object obj : calsOff) {
                     ContentValues values = new ContentValues();
+                    if (pe.isDayEvent()){
+                        values.put(CalendarContract.Events.ALL_DAY, 1);
+                    }
                     values.put(CalendarContract.Events.UID_2445, calStamp.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
                     values.put(CalendarContract.Events.DTSTART, beginTime.getTimeInMillis());
                     values.put(CalendarContract.Events.DTEND, endTime.getTimeInMillis());
                     values.put(CalendarContract.Events.TITLE, buildSummary(pe));
                     values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
                     values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
-                    values.put(CalendarContract.Events.EVENT_TIMEZONE, timezone);
+                    values.put(CalendarContract.Events.EVENT_TIMEZONE, strTimeZone);
                     Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
                     long eventID = Long.parseLong(uri.getLastPathSegment());
-
-                    break;
                 }
             }
 
@@ -217,17 +221,18 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
                 HashSet calsVacation = (HashSet) sharedPref.getStringSet("pref_google_calendar_vacation", new HashSet<String>());
                 for (Object obj : calsVacation) {
                     ContentValues values = new ContentValues();
+                    if (pe.isDayEvent()){
+                        values.put(CalendarContract.Events.ALL_DAY, 1);
+                    }
                     values.put(CalendarContract.Events.UID_2445, calStamp.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
                     values.put(CalendarContract.Events.DTSTART, beginTime.getTimeInMillis());
                     values.put(CalendarContract.Events.DTEND, endTime.getTimeInMillis());
                     values.put(CalendarContract.Events.TITLE, buildSummary(pe));
                     values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
                     values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
-                    values.put(CalendarContract.Events.EVENT_TIMEZONE, timezone);
+                    values.put(CalendarContract.Events.EVENT_TIMEZONE, strTimeZone);
                     Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
                     long eventID = Long.parseLong(uri.getLastPathSegment());
-
-                    break;
                 }
             }
 
@@ -235,17 +240,18 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
                 HashSet calsBlanc = (HashSet) sharedPref.getStringSet("pref_google_calendar_dayswhite", new HashSet<String>());
                 for (Object obj : calsBlanc) {
                     ContentValues values = new ContentValues();
+                    if (pe.isDayEvent()){
+                        values.put(CalendarContract.Events.ALL_DAY, 1);
+                    }
                     values.put(CalendarContract.Events.UID_2445, calStamp.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
                     values.put(CalendarContract.Events.DTSTART, beginTime.getTimeInMillis());
                     values.put(CalendarContract.Events.DTEND, endTime.getTimeInMillis());
                     values.put(CalendarContract.Events.TITLE, buildSummary(pe));
                     values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
                     values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
-                    values.put(CalendarContract.Events.EVENT_TIMEZONE, timezone);
+                    values.put(CalendarContract.Events.EVENT_TIMEZONE, strTimeZone);
                     Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
                     long eventID = Long.parseLong(uri.getLastPathSegment());
-
-                    break;
                 }
             }
         }
