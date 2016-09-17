@@ -18,6 +18,7 @@ import com.pluszero.rostertogo.model.PlanningModel;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -133,22 +134,38 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
         String timezone = TimeZone.getDefault().getID();
         // calendar for ics time generation id
-        GregorianCalendar cal = new GregorianCalendar();
+        GregorianCalendar calStamp = new GregorianCalendar();
         long calID = 1;
         int n = 0;
         ContentResolver cr = context.getContentResolver();
 
         for (PlanningEvent pe : model.getAlEvents()) {
 
-            //TODO: deal with allday events !
+            Calendar beginTime = GregorianCalendar.getInstance();
+            Calendar endTime = GregorianCalendar.getInstance();
+//TODO: fix bug of allday events spanning on 2 days by setting time zone to UTC and allday value to 1
+            if (pe.isDayEvent()) {
+                beginTime.set(
+                        pe.getGcBegin().get(Calendar.YEAR),
+                        pe.getGcBegin().get(Calendar.MONTH),
+                        pe.getGcBegin().get(Calendar.DAY_OF_MONTH));
+                endTime.set(
+                        pe.getGcBegin().get(Calendar.YEAR),
+                        pe.getGcBegin().get(Calendar.MONTH),
+                        pe.getGcBegin().get(Calendar.DAY_OF_MONTH));
+                endTime.add(Calendar.DATE, 1);
+            } else {
+                beginTime.setTimeInMillis(pe.getGcBegin().getTimeInMillis());
+                endTime.setTimeInMillis(pe.getGcEnd().getTimeInMillis());
+            }
 
-            if (getExportType(pe).equals(CALENDAR_FLIGHT)){
+            if (getExportType(pe).equals(CALENDAR_FLIGHT)) {
                 HashSet calsFlight = (HashSet) sharedPref.getStringSet("pref_google_calendar_flight", new HashSet<String>());
                 for (Object obj : calsFlight) {
                     ContentValues values = new ContentValues();
-                    values.put(CalendarContract.Events.UID_2445, cal.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
-                    values.put(CalendarContract.Events.DTSTART, pe.getGcBegin().getTimeInMillis());
-                    values.put(CalendarContract.Events.DTEND, pe.getGcEnd().getTimeInMillis());
+                    values.put(CalendarContract.Events.UID_2445, calStamp.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
+                    values.put(CalendarContract.Events.DTSTART, beginTime.getTimeInMillis());
+                    values.put(CalendarContract.Events.DTEND, endTime.getTimeInMillis());
                     values.put(CalendarContract.Events.TITLE, buildSummary(pe));
                     values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
                     values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
@@ -160,13 +177,13 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
                 }
             }
 
-            if (getExportType(pe).equals(CALENDAR_GROUND)){
+            if (getExportType(pe).equals(CALENDAR_GROUND)) {
                 HashSet calsGround = (HashSet) sharedPref.getStringSet("pref_google_calendar_ground", new HashSet<String>());
                 for (Object obj : calsGround) {
                     ContentValues values = new ContentValues();
-                    values.put(CalendarContract.Events.UID_2445, cal.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
-                    values.put(CalendarContract.Events.DTSTART, pe.getGcBegin().getTimeInMillis());
-                    values.put(CalendarContract.Events.DTEND, pe.getGcEnd().getTimeInMillis());
+                    values.put(CalendarContract.Events.UID_2445, calStamp.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
+                    values.put(CalendarContract.Events.DTSTART, beginTime.getTimeInMillis());
+                    values.put(CalendarContract.Events.DTEND, endTime.getTimeInMillis());
                     values.put(CalendarContract.Events.TITLE, buildSummary(pe));
                     values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
                     values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
@@ -178,13 +195,13 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
                 }
             }
 
-            if (getExportType(pe).equals(CALENDAR_OFF)){
+            if (getExportType(pe).equals(CALENDAR_OFF)) {
                 HashSet calsOff = (HashSet) sharedPref.getStringSet("pref_google_calendar_daysoff", new HashSet<String>());
                 for (Object obj : calsOff) {
                     ContentValues values = new ContentValues();
-                    values.put(CalendarContract.Events.UID_2445, cal.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
-                    values.put(CalendarContract.Events.DTSTART, pe.getGcBegin().getTimeInMillis());
-                    values.put(CalendarContract.Events.DTEND, pe.getGcEnd().getTimeInMillis());
+                    values.put(CalendarContract.Events.UID_2445, calStamp.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
+                    values.put(CalendarContract.Events.DTSTART, beginTime.getTimeInMillis());
+                    values.put(CalendarContract.Events.DTEND, endTime.getTimeInMillis());
                     values.put(CalendarContract.Events.TITLE, buildSummary(pe));
                     values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
                     values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
@@ -196,13 +213,13 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
                 }
             }
 
-            if (getExportType(pe).equals(CALENDAR_VACATION)){
+            if (getExportType(pe).equals(CALENDAR_VACATION)) {
                 HashSet calsVacation = (HashSet) sharedPref.getStringSet("pref_google_calendar_vacation", new HashSet<String>());
                 for (Object obj : calsVacation) {
                     ContentValues values = new ContentValues();
-                    values.put(CalendarContract.Events.UID_2445, cal.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
-                    values.put(CalendarContract.Events.DTSTART, pe.getGcBegin().getTimeInMillis());
-                    values.put(CalendarContract.Events.DTEND, pe.getGcEnd().getTimeInMillis());
+                    values.put(CalendarContract.Events.UID_2445, calStamp.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
+                    values.put(CalendarContract.Events.DTSTART, beginTime.getTimeInMillis());
+                    values.put(CalendarContract.Events.DTEND, endTime.getTimeInMillis());
                     values.put(CalendarContract.Events.TITLE, buildSummary(pe));
                     values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
                     values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
@@ -214,13 +231,13 @@ public class SyncPlanning extends AsyncTask<String, String, Integer> {
                 }
             }
 
-            if (getExportType(pe).equals(CALENDAR_BLANC)){
+            if (getExportType(pe).equals(CALENDAR_BLANC)) {
                 HashSet calsBlanc = (HashSet) sharedPref.getStringSet("pref_google_calendar_dayswhite", new HashSet<String>());
                 for (Object obj : calsBlanc) {
                     ContentValues values = new ContentValues();
-                    values.put(CalendarContract.Events.UID_2445, cal.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
-                    values.put(CalendarContract.Events.DTSTART, pe.getGcBegin().getTimeInMillis());
-                    values.put(CalendarContract.Events.DTEND, pe.getGcEnd().getTimeInMillis());
+                    values.put(CalendarContract.Events.UID_2445, calStamp.getTimeInMillis() + "_ROSTERTOGO_" + model.getUserTrigraph() + n);
+                    values.put(CalendarContract.Events.DTSTART, beginTime.getTimeInMillis());
+                    values.put(CalendarContract.Events.DTEND, endTime.getTimeInMillis());
                     values.put(CalendarContract.Events.TITLE, buildSummary(pe));
                     values.put(CalendarContract.Events.DESCRIPTION, buildDescription(pe));
                     values.put(CalendarContract.Events.CALENDAR_ID, mapCalendars.get(obj.toString()));
