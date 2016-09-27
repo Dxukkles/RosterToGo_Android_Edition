@@ -21,6 +21,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -333,6 +334,9 @@ public class PdfManager {
     private ArrayList<String> buildHotelDetailsList(String src) {
         ArrayList<String> list = new ArrayList<>();
         String target = "Hotel Telephone Address";
+        if (!src.contains(target)) {
+            return list;
+        }
         int idx = src.indexOf(target) + target.length() + newline.length();
 
         String[] lines = src.substring(idx).split(newline);
