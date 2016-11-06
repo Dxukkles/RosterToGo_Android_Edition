@@ -34,6 +34,7 @@ public class PlanningGenerator extends AsyncTask<String, String, Integer> {
     private ConnectTo connectTo;
     private HashMap<String, String> trigraphs;
     private String icsContent; // for offline mode only
+    private File offlinePdfFile;
 
     public PlanningGenerator(Context context, OnPlanningGeneratorListener listener) {
         this.listener = listener;
@@ -51,7 +52,6 @@ public class PlanningGenerator extends AsyncTask<String, String, Integer> {
             addToModel(extractICS(icsContent));
         }
 
-
         // additional work
         planningModel.findAirportDetails();
         planningModel.copyCrew();
@@ -62,10 +62,14 @@ public class PlanningGenerator extends AsyncTask<String, String, Integer> {
 
         // get data from PDF
         // IMPORTANT : deal with PDF after previous additional work
-        if(planningModel.modeOnline){
+        if (planningModel.modeOnline) {
             File privateDir = context.getDir("pdf", Context.MODE_PRIVATE); //Creating an internal dir;
             File pdfFile = new File(privateDir, "planning.pdf"); //Getting a file within the dir.
             planningModel.addDataFromPDF(pdfFile, trigraphs);
+        } else {
+            if (offlinePdfFile != null){
+                planningModel.addDataFromPDF(offlinePdfFile, trigraphs);
+            }
         }
 
         return PLANNING_OK;
@@ -157,5 +161,9 @@ public class PlanningGenerator extends AsyncTask<String, String, Integer> {
 
     public void setIcsContent(String icsContent) {
         this.icsContent = icsContent;
+    }
+
+    public void setOfflinePdfFile(File file) {
+        this.offlinePdfFile = file;
     }
 }

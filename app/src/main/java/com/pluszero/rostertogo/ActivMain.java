@@ -371,6 +371,13 @@ public class ActivMain extends AppCompatActivity
 
         PlanningGenerator planningGenerator = new PlanningGenerator(this, this);
         planningGenerator.setIcsContent(readIcs(file));
+
+        // Find a pdf file with the same name
+        File pdfFile = new File(file.getPath().replace(".ics", ".pdf"));
+        if (pdfFile.exists()){
+            planningGenerator.setOfflinePdfFile(pdfFile);
+        }
+
         planningGenerator.setPlanningModel(planningModel);
         planningGenerator.setTrigraphs(trigraphs);
         planningGenerator.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "");

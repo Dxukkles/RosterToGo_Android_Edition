@@ -13,6 +13,7 @@ import android.preference.PreferenceFragment;
 public class FragSettings extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String KEY_PREF_LOGIN_REMEMBER = "pref_login_remember";
+    public static final String KEY_PREF_AUTOSIGN = "pref_autosign";
     public static final String KEY_PREF_LOGIN_VALUE = "pref_login_value";
     public static final String KEY_PREF_PASSWORD_VALUE = "pref_password_value";
     public static final String KEY_PREF_GOOGLE_EMAIL = "pref_google_email";

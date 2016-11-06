@@ -9,8 +9,6 @@ package com.pluszero.rostertogo;
  * @author Cyril
  */
 
-import android.content.Context;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
