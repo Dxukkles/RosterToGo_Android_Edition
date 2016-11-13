@@ -10,25 +10,23 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 
-import java.util.ArrayList;
-
 /**
  * Created by Cyril on 11/05/2016.
  */
-public class DialFragActivityDetails extends DialogFragment {
+public class DialFragDetails extends DialogFragment {
 
     private Context context;
     private String content;
 
-    public DialFragActivityDetails() {
+    public DialFragDetails() {
     }
 
     /**
      * Use this factory method to create a new instance of
      * this fragment
      */
-    public static DialFragActivityDetails newInstance(String content) {
-        DialFragActivityDetails fragment = new DialFragActivityDetails();
+    public static DialFragDetails newInstance(String content) {
+        DialFragDetails fragment = new DialFragDetails();
         Bundle args = new Bundle();
         args.putString("content", content);
         fragment.setArguments(args);

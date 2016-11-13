@@ -5,7 +5,6 @@
  */
 package com.pluszero.rostertogo.model;
 
-import com.pluszero.rostertogo.ActivityFigures;
 import com.pluszero.rostertogo.DateComparator;
 import com.pluszero.rostertogo.PdfManager;
 

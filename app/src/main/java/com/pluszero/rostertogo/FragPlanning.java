@@ -6,8 +6,10 @@ package com.pluszero.rostertogo;
 
 import android.app.Fragment;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -15,8 +17,6 @@ import android.widget.ListView;
 
 import com.pluszero.rostertogo.model.PlanningEvent;
 import com.pluszero.rostertogo.model.PlanningModel;
-
-import java.util.List;
 
 
 public class FragPlanning extends Fragment {
@@ -34,7 +34,7 @@ public class FragPlanning extends Fragment {
 
         View rootView = inflater.inflate(R.layout.frag_planning, container, false);
         listView = (ListView) rootView.findViewById(R.id.listView);
-
+        this.setHasOptionsMenu(true);
         updateList();
         return rootView;
     }
@@ -47,8 +47,8 @@ public class FragPlanning extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                DialFragActivityDetails dialog;
-                dialog = DialFragActivityDetails.newInstance(buildDetails(model.getAlEvents().get(position)));
+                DialFragDetails dialog;
+                dialog = DialFragDetails.newInstance(buildDetails(model.getAlEvents().get(position)));
                 dialog.show(getFragmentManager(), "details");
             }
         });
@@ -99,6 +99,27 @@ public class FragPlanning extends Fragment {
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.frag_planning_actions, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.action_figures:
+                DialFragDetails dialog;
+                dialog = DialFragDetails.newInstance(model.getActivityFigures().buildHoursSheet());
+                dialog.show(getFragmentManager(), "details");
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     public void setData(PlanningModel model) {

@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.pluszero.rostertogo;
+package com.pluszero.rostertogo.model;
 
+import com.pluszero.rostertogo.Utils;
 import com.pluszero.rostertogo.model.MonthActivity;
 import com.pluszero.rostertogo.model.PlanningEvent;
 import com.pluszero.rostertogo.model.PlanningModel;
@@ -92,7 +93,7 @@ public class ActivityFigures {
 
     public String buildHoursSheet() {
         DateFormatSymbols dfs = new DateFormatSymbols();
-        final String[] shortMonths = new String[]{"Jan", "Fév", "Mar", "Avr", "Mai", "Jui", "Jul", "Aou", "Sep", "Nov", "Déc"};
+        final String[] shortMonths = new String[]{"Jan", "Fév", "Mar", "Avr", "Mai", "Jui", "Jul", "Aou", "Sep", "Oct", "Nov", "Déc"};
         dfs.setShortMonths(shortMonths);
         final SimpleDateFormat sdfDay = new SimpleDateFormat("dd", dfs);
         final SimpleDateFormat sdfMonth = new SimpleDateFormat("MMM yyyy", dfs);

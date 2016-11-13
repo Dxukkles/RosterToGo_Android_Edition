@@ -5,6 +5,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Options</string>
+    <string name="action_figures">Statistiques</string>
     <string name="title_activity_activity_login">Merci de vous identifier</string>
 
     <string name="file_name">Nom de fichier</string>
